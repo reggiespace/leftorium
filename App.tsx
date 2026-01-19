@@ -1,0 +1,33 @@
+import React, { Suspense, lazy } from 'react';
+import { Route, HashRouter as Router, Routes } from 'react-router-dom';
+import Layout from './components/Layout';
+import LoadingSpinner from './components/LoadingSpinner';
+
+// Lazy loading pages
+const Home = lazy(() => import('./pages/Home'));
+const ProductList = lazy(() => import('./pages/ProductList'));
+const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const About = lazy(() => import('./pages/About'));
+const Submit = lazy(() => import('./pages/Submit'));
+const Auth = lazy(() => import('./pages/Auth'));
+
+const App: React.FC = () => {
+  return (
+    <Router>
+      <Layout>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<ProductList />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/submit" element={<Submit />} />
+            <Route path="/auth" element={<Auth />} />
+          </Routes>
+        </Suspense>
+      </Layout>
+    </Router>
+  );
+};
+
+export default App;
