@@ -26,7 +26,7 @@ export interface Product {
   price: string | 'N/A';
   image: string;
   isReal: boolean;
-  features: string[];
+  features: { text: string; icon: string; }[];
   longDescription?: string;
 }
 

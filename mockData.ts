@@ -1,5 +1,5 @@
 
-import { Product, Category, Comment } from './types';
+import { Category, Comment, Product } from './types';
 
 export const MOCK_PRODUCTS: Product[] = [
   {
@@ -10,7 +10,11 @@ export const MOCK_PRODUCTS: Product[] = [
     price: '$12.99',
     image: 'https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=800',
     isReal: true,
-    features: ['Right-side spiral', 'Smudge-resistant paper', 'Perforated pages'],
+    features: [
+      { text: 'Right-side spiral', icon: 'menu_book' }, 
+      { text: 'Smudge-resistant paper', icon: 'verified' }, 
+      { text: 'Perforated pages', icon: 'content_cut' }
+    ],
     longDescription: 'Traditional spiral notebooks are a nightmare for lefties. The wire digs into your palm as you write. Our notebook reverses the spiral so your hand rests comfortably on the page.'
   },
   {
@@ -21,7 +25,11 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 'N/A',
     image: 'https://images.unsplash.com/photo-1530124566582-aa61dd3c9dca?auto=format&fit=crop&q=80&w=800',
     isReal: false,
-    features: ['Reverse numbering', 'Southpaw lock mechanism', 'Friction-less draw'],
+    features: [
+      { text: 'Reverse numbering', icon: 'swap_horiz' }, 
+      { text: 'Southpaw lock mechanism', icon: 'lock' }, 
+      { text: 'Friction-less draw', icon: 'speed' }
+    ],
     longDescription: 'Have you ever tried to read a tape measure while holding it in your left hand? The numbers are upside down! This concept flip-measures from right-to-left, making measurements intuitive for the 10%.'
   },
   {
@@ -32,7 +40,11 @@ export const MOCK_PRODUCTS: Product[] = [
     price: '$24.50',
     image: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&q=80&w=800',
     isReal: true,
-    features: ['Reversed blades', 'Ergonomic grip', 'High-carbon steel'],
+    features: [
+      { text: 'Reversed blades', icon: 'compare_arrows' }, 
+      { text: 'Ergonomic grip', icon: 'back_hand' }, 
+      { text: 'High-carbon steel', icon: 'diamond' }
+    ],
     longDescription: 'Standard scissors push paper away when used with the left hand. These precision tools have reversed blades, so the upper blade is on the left, giving you a perfect view of the cutting line.'
   },
   {
@@ -43,7 +55,11 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 'N/A',
     image: 'https://images.unsplash.com/photo-1591261730799-ee4e6c2d16d7?auto=format&fit=crop&q=80&w=800',
     isReal: false,
-    features: ['Anti-Clockwise Drive', 'Sinistral Grip', 'Magnetic Lid Lifter'],
+    features: [
+      { text: 'Anti-Clockwise Drive', icon: 'rotate_left' }, 
+      { text: 'Sinistral Grip', icon: 'handshake' }, 
+      { text: 'Magnetic Lid Lifter', icon: 'attraction' }
+    ],
     longDescription: 'Rotating a can opener clockwise is a dominant right-hand motion. The Sinister Opener reverses the gears, allowing left-handers to use their natural rotational torque.'
   }
 ];

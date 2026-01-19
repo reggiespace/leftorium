@@ -38,7 +38,10 @@ const mapStrapiToProduct = (item: any): Product => {
     image: data.art_url || 'https://via.placeholder.com/300', // Fallback
     isReal: data.is_real,
     features: Array.isArray(data.features) 
-      ? data.features.map((f: any) => typeof f === 'string' ? f : JSON.stringify(f)) 
+      ? data.features.map((f: any) => ({
+          text: f.text || (typeof f === 'string' ? f : JSON.stringify(f)),
+          icon: f.icon || 'check_circle' // Default icon if missing
+        }))
       : [],
     longDescription: data.description
   };
