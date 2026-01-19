@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Button from '../components/Button';
-import Input from '../components/Input';
+import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { MOCK_COMMENTS } from '../mockData';
 import { ProductService } from '../services/productService';
-import { Comment, Product } from '../types';
+import { Product } from '../types';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams();
   const [product, setProduct] = useState<Product | undefined>(undefined);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,30 +17,11 @@ const ProductDetail: React.FC = () => {
       setLoading(true);
       ProductService.getById(id).then(p => {
         setProduct(p);
-        setComments(MOCK_COMMENTS.filter(c => c.productId === id));
         setLoading(false);
       });
       ProductService.getRelated(id).then(setRelatedProducts);
     }
   }, [id]);
-
-  const handleSubmitComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim() || !product) return;
-    
-    const comment: Comment = {
-      id: Date.now().toString(),
-      productId: product.id,
-      userName: 'Current Southpaw',
-      userAvatar: 'https://picsum.photos/seed/user/100/100',
-      content: newComment,
-      timestamp: 'Just now',
-      likes: 0
-    };
-    
-    setComments([comment, ...comments]);
-    setNewComment('');
-  };
 
   if (loading) {
     return <LoadingSpinner />;
@@ -110,53 +88,7 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Comments */}
-          <section className="pt-12 border-t border-slate-200 dark:border-slate-800 space-y-8">
-            <div className="flex items-center gap-4">
-              <h3 className="text-2xl font-black">The Southpaw Forum</h3>
-              <span className="bg-slate-200 dark:bg-slate-800 px-3 py-1 rounded-full text-xs font-bold text-slate-500">{comments.length} Comments</span>
-            </div>
-
-            <form onSubmit={handleSubmitComment} className="bg-white dark:bg-background-card p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <Input 
-                multiline
-                placeholder="Share your experience or join the debate..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="min-h-[120px]"
-              />
-              <div className="flex justify-end mt-4">
-                <Button type="submit">
-                  Post Comment
-                </Button>
-              </div>
-            </form>
-
-            <div className="space-y-6">
-              {comments.map(c => (
-                <div key={c.id} className="flex gap-4">
-                   <div className="size-10 rounded-full bg-slate-200 overflow-hidden shrink-0 ring-2 ring-primary/10">
-                      <img src={c.userAvatar} alt={c.userName} className="w-full h-full object-cover" />
-                   </div>
-                   <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                         <span className="font-bold text-sm">{c.userName}</span>
-                         <span className="text-xs text-slate-400">{c.timestamp}</span>
-                      </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                        {c.content}
-                      </p>
-                      <div className="flex items-center gap-4">
-                         <button className="flex items-center gap-1 text-primary hover:text-primary/70">
-                            <span className="material-symbols-outlined text-sm">thumb_up</span>
-                            <span className="text-xs font-bold">{c.likes}</span>
-                         </button>
-                         <button className="text-xs font-bold text-slate-400 hover:underline">Reply</button>
-                      </div>
-                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
+          <CommentsSection productId={product.id} />
         </div>
 
         {/* Sidebar: Left on Desktop (order-1), Bottom on Mobile (order-2) */}

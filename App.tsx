@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { Route, HashRouter as Router, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
+import { AuthProvider } from './context/AuthContext';
 
 // Lazy loading pages
 const Home = lazy(() => import('./pages/Home'));
@@ -14,18 +15,20 @@ const Auth = lazy(() => import('./pages/Auth'));
 const App: React.FC = () => {
   return (
     <Router>
-      <Layout>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<ProductList />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/submit" element={<Submit />} />
-            <Route path="/auth" element={<Auth />} />
-          </Routes>
-        </Suspense>
-      </Layout>
+      <AuthProvider>
+        <Layout>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<ProductList />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/submit" element={<Submit />} />
+              <Route path="/auth" element={<Auth />} />
+            </Routes>
+          </Suspense>
+        </Layout>
+      </AuthProvider>
     </Router>
   );
 };

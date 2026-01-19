@@ -1,9 +1,32 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Input from '../components/Input';
+import { useAuth } from '../context/AuthContext';
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [error, setError] = useState('');
+  const { login, register, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    try {
+      if (isLogin) {
+        await login(email, password);
+      } else {
+        await register(username, email, password);
+      }
+      navigate('/');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    }
+  };
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-6">
@@ -24,30 +47,53 @@ const Auth: React.FC = () => {
 
            <div className="flex gap-2 bg-slate-100 dark:bg-background-dark p-1 rounded-xl">
              <Button 
-               onClick={() => setIsLogin(true)}
+               onClick={() => { setIsLogin(true); setError(''); }}
                variant={isLogin ? 'primary' : 'ghost'}
                className={`flex-1 ${!isLogin && 'bg-transparent shadow-none text-slate-500'}`}
              >
                Login
              </Button>
              <Button 
-               onClick={() => setIsLogin(false)}
+               onClick={() => { setIsLogin(false); setError(''); }}
                variant={!isLogin ? 'primary' : 'ghost'}
                className={`flex-1 ${isLogin && 'bg-transparent shadow-none text-slate-500'}`}
              >
                Sign Up
              </Button>
            </div>
+           
+           {error && (
+             <div className="p-3 bg-red-100 text-red-600 rounded-lg text-sm text-center font-medium">
+               {error}
+             </div>
+           )}
 
-           <form className="space-y-4" onSubmit={e => e.preventDefault()}>
+           <form className="space-y-4" onSubmit={handleSubmit}>
               {!isLogin && (
-                <Input placeholder="Full Name" />
+                <Input 
+                  placeholder="Username" 
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
               )}
-              <Input type="email" placeholder="Southpaw Email" />
-              <Input type="password" placeholder="Password" />
+              <Input 
+                type="email" 
+                placeholder="Southpaw Email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Input 
+                type="password" 
+                placeholder="Password" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
               
-              <Button fullWidth className="mt-6 h-14 text-lg">
-                 {isLogin ? 'Enter the Hub' : 'Create Account'}
+              <Button fullWidth className="mt-6 h-14 text-lg" disabled={isLoading}>
+                 {isLoading ? 'Processing...' : (isLogin ? 'Enter the Hub' : 'Create Account')}
               </Button>
            </form>
 
@@ -57,11 +103,11 @@ const Auth: React.FC = () => {
            </div>
 
            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" className="text-sm">
+              <Button variant="outline" type="button" className="text-sm">
                  <img src="https://www.google.com/favicon.ico" className="w-4 h-4 mr-2" alt="G" />
                  Google
               </Button>
-              <Button variant="outline" className="text-sm">
+              <Button variant="outline" type="button" className="text-sm">
                  <span className="material-symbols-outlined text-sm mr-2">apple</span>
                  Apple
               </Button>
