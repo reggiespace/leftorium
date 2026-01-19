@@ -1,12 +1,96 @@
-
 import React, { useState } from 'react';
 import { generateSouthpawIdea } from '../services/geminiService';
+import { StrapiService } from '../services/strapiService';
+import { Category } from '../types';
 
 const Submit: React.FC = () => {
   const [type, setType] = useState<'real' | 'fake'>('real');
-  const [problem, setProblem] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedIdea, setGeneratedIdea] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Real product state
+  const [formData, setFormData] = useState({
+    title: '',
+    category: Category.KITCHEN,
+    price: '',
+    shortDescription: '',
+    description: '',
+    features: '',
+    artUrl: '',
+    isReal: true
+  });
+
+  // ... (Fake idea state)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleRealSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    // Format payload for Strapi
+    const payload = {
+      data: {
+        title: formData.title,
+        slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        category: formData.category,
+        price: formData.price || 'N/A',
+        short_description: formData.shortDescription,
+        description: formData.description,
+        is_real: true,
+        features: formData.features.split('\n').filter(f => f.trim() !== ''),
+        art_url: formData.artUrl
+      }
+    };
+
+    try {
+      await StrapiService.submitProduct(payload);
+      alert('Product submitted successfully!');
+      // Reset form or redirect? keeping it simple for now as per instructions
+      setFormData({
+        title: '',
+        category: Category.KITCHEN,
+        price: '',
+        shortDescription: '',
+        description: '',
+        features: '',
+        artUrl: '',
+        isReal: true
+      });
+    } catch (error) {
+      console.error(error);
+      alert('Failed to submit product to Strapi.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFakeSubmit = async () => {
+    if (!generatedIdea) return;
+    setIsSubmitting(true);
+
+    const payload = {
+      data: {
+        title: generatedIdea.name,
+        problem: problem,
+        tagline: generatedIdea.tagline,
+        features: generatedIdea.features,
+        votes: 0
+      }
+    };
+
+    try {
+      await StrapiService.submitSuggestion(payload);
+      alert('Idea submitted to the Hall of Fame!');
+    } catch (error) {
+      console.error(error);
+      alert('Failed to submit suggestion.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleGenerate = async () => {
     if (!problem.trim()) return;
@@ -42,21 +126,102 @@ const Submit: React.FC = () => {
         </div>
 
         {type === 'real' ? (
-          <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Product Name</label>
-              <input type="text" className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" placeholder="e.g. Left-handed Can Opener Pro" />
+          <form className="space-y-6" onSubmit={handleRealSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Product Name</label>
+                <input 
+                  required
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  type="text" 
+                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
+                  placeholder="e.g. Left-handed Can Opener Pro" 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Category</label>
+                <select 
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary"
+                >
+                  {Object.values(Category).map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Buy Link or Official Site</label>
-              <input type="url" className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" placeholder="https://..." />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+               <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Price</label>
+                <input 
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  type="text" 
+                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
+                  placeholder="$12.99" 
+                />
+              </div>
+               <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Image URL</label>
+                <input 
+                  required
+                  name="artUrl"
+                  value={formData.artUrl}
+                  onChange={handleInputChange}
+                  type="url" 
+                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
+                  placeholder="https://..." 
+                />
+              </div>
             </div>
+
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Why is it great for Southpaws?</label>
-              <textarea rows={4} className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" placeholder="Explain the ergonomic advantage..." />
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Short Description</label>
+              <input 
+                required
+                name="shortDescription"
+                value={formData.shortDescription}
+                onChange={handleInputChange}
+                type="text" 
+                className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
+                placeholder="Brief summary for the product card..." 
+              />
             </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Full Description (Markdown)</label>
+              <textarea 
+                required
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={4} 
+                className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
+                placeholder="Explain the ergonomic advantage in detail..." 
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Features (One per line)</label>
+              <textarea 
+                name="features"
+                value={formData.features}
+                onChange={handleInputChange}
+                rows={4} 
+                className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
+                placeholder="- Reversed blades&#10;- Ergonomic grip&#10;- High-carbon steel" 
+              />
+            </div>
+
             <div className="pt-4">
-              <button className="w-full bg-primary text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-primary/30 hover:scale-[1.01] transition-transform">
+              <button type="submit" className="w-full bg-primary text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-primary/30 hover:scale-[1.01] transition-transform">
                 Submit to Registry
               </button>
             </div>
@@ -99,7 +264,10 @@ const Submit: React.FC = () => {
                     ))}
                  </ul>
                  <div className="pt-6">
-                   <button className="w-full bg-primary text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-primary/30">
+                   <button 
+                     onClick={handleFakeSubmit}
+                     className="w-full bg-primary text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-primary/30 hover:scale-[1.01] transition-transform"
+                   >
                      Add to the Hall of Fame
                    </button>
                  </div>

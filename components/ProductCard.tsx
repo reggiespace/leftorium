@@ -9,7 +9,7 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <Link 
-      to={`/product/${product.id}`}
+      to={`/product/${product.slug || product.id}`}
       className="group bg-white dark:bg-[#1a2335] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 flex flex-col h-full"
     >
       <div className="aspect-[4/3] relative overflow-hidden shrink-0">

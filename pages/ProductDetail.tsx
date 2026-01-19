@@ -100,8 +100,8 @@ const ProductDetail: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-6">
-              {product.features.map(f => (
-                <div key={f} className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
+              {product.features.map((f, i) => (
+                <div key={i} className="p-4 bg-slate-100 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-800">
                   <span className="material-symbols-outlined text-primary mb-2">check_circle</span>
                   <p className="font-bold text-sm">{f}</p>
                 </div>

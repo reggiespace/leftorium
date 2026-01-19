@@ -20,6 +20,7 @@ export interface Comment {
 export interface Product {
   id: string;
   name: string;
+  slug?: string; // Strapi friendly URL
   description: string;
   category: Category;
   price: string | 'N/A';

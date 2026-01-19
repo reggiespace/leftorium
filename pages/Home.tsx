@@ -7,9 +7,15 @@ import { Product } from '../types';
 
 const Home: React.FC = () => {
   const [featured, setFeatured] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    ProductService.getFeatured().then(setFeatured);
+    ProductService.getFeatured()
+      .then(data => {
+        setFeatured(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
   return (
@@ -23,7 +29,7 @@ const Home: React.FC = () => {
               The World is <span className="text-primary italic">Right-Handed.</span> We’re Here to Fix That.
             </h1>
             <p className="text-slate-600 dark:text-slate-300 text-lg leading-relaxed mb-12">
-              Leftorium was born out of a simple, persistent frustration. In a world optimized for the right-handed majority, southpaws live in a state of constant, low-level friction. From smudged ink to power tools that blow sawdust directly into our faces, the 'Right-Handed Default' is everywhere.
+              Navigating a right-handed world has always required a little extra effort—until now. We’ve collected the best products designed specifically for left-handed ergonomics. Say goodbye to the smudged ink on your hand and the sawdust in your face. Welcome to a collection of tools that finally feel like they were made for you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/products">
@@ -44,12 +50,12 @@ const Home: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
           <div className="relative z-10 w-full max-w-xl aspect-square rounded-2xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800">
              <img 
-               src="https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&q=80&w=800" 
-               alt="Left handed scissors" 
+               src="https://plus.unsplash.com/premium_photo-1679496828364-380f02ee5e0c?q=80&w=928&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+               alt="Left handed" 
                className="w-full h-full object-cover"
              />
              <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
-                <p className="text-white text-lg italic font-medium">"Finally, a world that isn't backwards."</p>
+                <p className="text-white text-lg italic font-medium">"Where the left hand finally feels right."</p>
              </div>
           </div>
         </div>
@@ -65,18 +71,38 @@ const Home: React.FC = () => {
           <div className="w-20 h-1.5 bg-primary mx-auto mt-6 rounded-full"></div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featured.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-        
-        <div className="text-center mt-12">
-           <Link to="/products" className="inline-flex items-center gap-2 text-primary font-bold hover:underline">
-              View All Southpaw Products
-              <span className="material-symbols-outlined">chevron_right</span>
-           </Link>
-        </div>
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-4 text-slate-500">Curating the best left-handed gear...</p>
+          </div>
+        ) : featured.length > 0 ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featured.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+            
+            <div className="text-center mt-12">
+               <Link to="/products" className="inline-flex items-center gap-2 text-primary font-bold hover:underline">
+                  View All Southpaw Products
+                  <span className="material-symbols-outlined">chevron_right</span>
+               </Link>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+            <span className="material-symbols-outlined text-6xl text-slate-300 mb-4">inventory_2</span>
+            <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">The shelves are temporarily bare!</h3>
+            <p className="text-slate-500 max-w-md mx-auto mb-8">
+              We're connecting to our warehouse (Strapi). If you're the store manager, make sure the backend is running and populated.
+            </p>
+            <Link to="/submit">
+              <Button>Add the First Product</Button>
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* Stats Section */}

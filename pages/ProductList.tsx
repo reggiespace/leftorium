@@ -5,11 +5,15 @@ import { Category, Product } from '../types';
 
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'real' | 'fake'>('all');
   const [category, setCategory] = useState<string>('all');
 
   useEffect(() => {
-    ProductService.getAll().then(setProducts);
+    ProductService.getAll().then(data => {
+      setProducts(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   const categories = ['all', ...Object.values(Category)];
@@ -64,17 +68,33 @@ const ProductList: React.FC = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-
-      {filteredProducts.length === 0 && (
-        <div className="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
-          <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">search_off</span>
-          <p className="text-slate-500 font-bold">No products found matching your filters.</p>
+      {loading ? (
+         <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+         </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50 dark:bg-slate-900/50">
+           <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">cloud_off</span>
+           <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No connection to inventory</h3>
+           <p className="text-slate-500 max-w-md mx-auto">
+             We couldn't load the products from Strapi. Please ensure your local server is running at {import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}.
+           </p>
         </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
+              <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">search_off</span>
+              <p className="text-slate-500 font-bold">No products found matching your filters.</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
