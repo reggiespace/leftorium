@@ -233,6 +233,9 @@ const Submit: React.FC = () => {
               <button type="submit" className="w-full bg-primary text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-primary/30 hover:scale-[1.01] transition-transform">
                 Submit to Registry
               </button>
+              <p className="text-center text-xs text-slate-400 font-medium mt-4">
+                Please note: All submissions are moderated before being published. This process may take up to 5 business days.
+              </p>
             </div>
           </form>
         ) : (
@@ -294,8 +297,9 @@ const Submit: React.FC = () => {
                </button>
              </div>
              
-             <p className="text-center text-xs text-slate-400 font-medium">
-               Submitting a fake idea helps raise awareness of the daily ergonomic challenges lefties face.
+             <p className="text-center text-xs text-slate-400 font-medium space-y-1">
+               <span className="block">Submitting a fake idea helps raise awareness of the daily ergonomic challenges lefties face.</span>
+               <span className="block">Please note: All submissions are moderated before being published. This process may take up to 5 business days.</span>
              </p>
           </form>
         )}
