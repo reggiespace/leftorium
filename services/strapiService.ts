@@ -21,7 +21,7 @@ const getHeaders = () => {
 
 // Helper to map Strapi response to our Product type
 const mapStrapiToProduct = (item: any): Product => {
-  const id = item.documentId || item.id; // Strapi V5 uses documentId, V4 uses id
+  const id = item.documentId || item.id; // Prefer documentId for v5
   const data = item.attributes || item;
 
   return {
@@ -55,11 +55,17 @@ export const StrapiService = {
       }
 
       const json = await response.json();
-      if (!json.data) return [];
+      if (!json.data || json.data.length === 0) {
+        console.warn('StrapiService: No products found. Check if products are PUBLISHED (not Draft) in Strapi.');
+        return [];
+      }
 
       return json.data.map(mapStrapiToProduct);
     } catch (error) {
       console.error('StrapiService getProducts error:', error);
+      if (error instanceof Error && error.message.includes('403')) {
+         console.error('🚨 PERMISSION ERROR: Check Strapi Settings > Users & Permissions > Roles > Public/Authenticated > Leftorium Product > find');
+      }
       throw error;
     }
   },
@@ -159,13 +165,15 @@ export const StrapiService = {
                 data: {
                     username: username, // Duplicating username for display convenience
                     email: email,
-                    user: data.user.id // Link strict relation to auth user
+                    users_permissions_user: data.user.id // Link strict relation to auth user
                 }
             })
         });
-      } catch (err) {
-          console.error('Failed to create user profile, but auth created', err);
-          // Non-blocking but not ideal
+      } catch (err: any) {
+          console.error('Failed to create user profile after auth registration:', err);
+          if (err instanceof Error && err.message.includes('403')) {
+            console.error('🚨 PERMISSION ERROR: The "Authenticated" role cannot create "Leftorium Users". Go to Strapi > Settings > Roles > Authenticated > Leftorium-user > check "create".');
+          }
       }
 
       return data;
@@ -183,10 +191,13 @@ export const StrapiService = {
       }
       
       const authUser = await response.json();
+      const authUserId = authUser.documentId || authUser.id; // Use documentId if available (Strapi v5 standard)
 
       // 2. Fetch associated Leftorium User profile
+      // Strategy: Filter by the 'username' attribute on Leftorium User.
+      // IMPORTANT: Add publicationState=preview to find Draft profiles (which auto-creation might produce).
       try {
-          const profileRes = await fetch(`${STRAPI_URL}/api/leftorium-users?filters[user][id][$eq]=${authUser.id}&populate=*`, {
+          const profileRes = await fetch(`${STRAPI_URL}/api/leftorium-users?filters[username][$eq]=${authUser.username}&populate=*&publicationState=preview`, {
               headers
           });
           
@@ -194,18 +205,77 @@ export const StrapiService = {
               const profileJson = await profileRes.json();
               if (profileJson.data && profileJson.data.length > 0) {
                   const profile = profileJson.data[0];
+                  // v5: documentId is the main ID, id is internal int. We often use documentId for public.
+                  const profileId = profile.documentId || profile.id; 
                   const attrs = profile.attributes || profile;
                   
                   // Merge profile data into user object
                   return {
                       ...authUser,
-                      id: authUser.id, // Keep auth ID as primary for now (for token ref)
-                      username: attrs.username || authUser.username, // Prefer local profile username
-                      email: attrs.email || authUser.email,          // Prefer local profile email
-                      leftoriumUserId: profile.id,
+                      id: authUserId,
+                      username: attrs.username || authUser.username,
+                      email: attrs.email || authUser.email,
+                      leftoriumUserId: profileId,
                       avatar: attrs.avatar?.data?.attributes?.url || attrs.avatar?.url || null
                   };
+              } else {
+                  // Profile not found - Auto-create it (Lazy Creation)
+                  // "Invalid key" errors suggest we can't set the relation easily during creation via API.
+                  // Fallback: Create profile WITHOUT relation first (essential data), then try to link it.
+                  // Since we now look up by 'username', this is sufficient for the app to work.
+                  try {
+                      const createPayload = {
+                        data: {
+                            username: authUser.username,
+                            email: authUser.email,
+                            publishedAt: new Date().toISOString() // Create as PUBLISHED immediately
+                        }
+                      };
+
+                      const createRes = await fetch(`${STRAPI_URL}/api/leftorium-users`, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify(createPayload)
+                      });
+
+                      if (createRes.ok) {
+                          const newProfileJson = await createRes.json();
+                          const newProfile = newProfileJson.data;
+                          const newProfileId = newProfile.documentId || newProfile.id;
+                          
+                          // Best-effort attempt to link the relation afterwards
+                          try {
+                              await fetch(`${STRAPI_URL}/api/leftorium-users/${newProfile.documentId}`, {
+                                  method: 'PUT',
+                                  headers,
+                                  body: JSON.stringify({
+                                      data: {
+                                          users_permissions_user: authUserId
+                                      }
+                                  })
+                              });
+                          } catch (linkErr) {
+                              // Non-critical: linking might fail due to permissions, but app works via username matching
+                          }
+
+                          return {
+                              ...authUser,
+                              id: authUserId,
+                              username: authUser.username,
+                              email: authUser.email,
+                              leftoriumUserId: newProfileId,
+                              avatar: null 
+                          };
+                      } else {
+                         // Fallback logging for creation failure
+                         console.warn('Failed to auto-create profile:', await createRes.text());
+                      }
+                  } catch (createErr) {
+                      console.error('Error auto-creating profile:', createErr);
+                  }
               }
+          } else {
+              console.warn('Failed to check for profile:', await profileRes.text());
           }
       } catch (e) {
           console.warn('Could not fetch extended profile', e);
@@ -216,10 +286,9 @@ export const StrapiService = {
 
   async getComments(productId: string) {
     try {
-      // populate 'leftorium_user' (snake_case likely) or 'leftoriumUser' (camelCase) - Strapi defaults to camelCase usually for API response keys 
-      // but relation field might be 'leftorium_user'.
-      // Let's try populate[leftorium_user]...
-      const response = await fetch(`${STRAPI_URL}/api/leftorium-comments?filters[product][id][$eq]=${productId}&populate[leftorium_user][populate]=avatar&sort=createdAt:desc`, {
+      // Schema confirmed: relation to user profile is named 'user'.
+      // Relation to product is named 'product'.
+      const response = await fetch(`${STRAPI_URL}/api/leftorium-comments?filters[product][documentId][$eq]=${productId}&populate[user][populate]=avatar&sort=createdAt:desc`, {
         headers: getHeaders()
       });
 
@@ -229,10 +298,10 @@ export const StrapiService = {
       if (!json.data) return [];
 
       return json.data.map((item: any) => {
-        const data = item.attributes || item; // Handle Strapi v4/v5
+        const data = item.attributes || item; 
         
-        // Handle relation: 'leftorium_user' or 'leftoriumUser'
-        const rawUser = data.leftorium_user || data.leftoriumUser;
+        // Handle relation: 'user'
+        const rawUser = data.user;
         const userData = rawUser?.data?.attributes || rawUser?.attributes || rawUser;
         
         return {
@@ -252,25 +321,19 @@ export const StrapiService = {
   },
 
   async submitComment(productId: string, content: string) {
-    const user = await this.getMe(); // This now returns object with leftoriumUserId if available
+    const user = await this.getMe(); 
     
-    // We link to 'leftorium_user' not 'user' (auth)
-    // Relation key depends on field name. Assuming 'leftorium_user'.
-    
+    // Schema confirmed: relation field is 'user'
     const body: any = {
         data: {
           content,
-          product: productId,
+          product: productId, // Assuming 'product' relation accepts documentId or ID. 
         }
     };
 
     if (user.leftoriumUserId) {
-        body.data.leftorium_user = user.leftoriumUserId;
-    } else {
-        // Fallback: try linking auth user if schema allows, or error?
-        // Usually if we failed to get profile, we might not be able to comment nicely.
-        // We'll proceed; maybe the user didn't have a profile doc created yet.
-    }
+        body.data.user = user.leftoriumUserId;
+    } 
 
     const response = await fetch(`${STRAPI_URL}/api/leftorium-comments`, {
       method: 'POST',
