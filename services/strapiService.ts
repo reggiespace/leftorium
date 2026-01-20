@@ -1,5 +1,27 @@
 import { Product } from '../types';
 
+export interface StrapiPagination {
+  page: number;
+  pageSize: number;
+  pageCount: number;
+  total: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    pagination: StrapiPagination;
+  };
+}
+
+export interface GetProductsOptions {
+  page?: number;
+  pageSize?: number;
+  category?: string;
+  isReal?: boolean;
+}
+
+
 const STRAPI_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 const STRAPI_TOKEN = import.meta.env.VITE_STRAPI_TOKEN;
 
@@ -44,9 +66,21 @@ const mapStrapiToProduct = (item: any): Product => {
 };
 
 export const StrapiService = {
-  async getProducts(): Promise<Product[]> {
+  async getProducts(options: GetProductsOptions = {}): Promise<PaginatedResponse<Product>> {
     try {
-      const response = await fetch(`${STRAPI_URL}/api/leftorium-products?populate=*`, {
+      const { page = 1, pageSize = 8, category, isReal } = options;
+      
+      let query = `pagination[page]=${page}&pagination[pageSize]=${pageSize}&populate=*`;
+      
+      if (category && category !== 'all') {
+        query += `&filters[category][$eq]=${category}`;
+      }
+      
+      if (isReal !== undefined) {
+        query += `&filters[is_real][$eq]=${isReal}`;
+      }
+
+      const response = await fetch(`${STRAPI_URL}/api/leftorium-products?${query}`, {
         headers: getHeaders()
       });
       
@@ -55,12 +89,14 @@ export const StrapiService = {
       }
 
       const json = await response.json();
-      if (!json.data || json.data.length === 0) {
-        console.warn('StrapiService: No products found. Check if products are PUBLISHED (not Draft) in Strapi.');
-        return [];
+      if (!json.data) {
+        return { data: [], meta: { pagination: { page: 1, pageSize: 8, pageCount: 0, total: 0 } } };
       }
 
-      return json.data.map(mapStrapiToProduct);
+      return {
+        data: json.data.map(mapStrapiToProduct),
+        meta: json.meta
+      };
     } catch (error) {
       console.error('StrapiService getProducts error:', error);
       if (error instanceof Error && error.message.includes('403')) {
@@ -284,20 +320,19 @@ export const StrapiService = {
       return authUser;
   },
 
-  async getComments(productId: string) {
+  async getComments(productId: string, page: number = 1, pageSize: number = 5): Promise<PaginatedResponse<any>> {
     try {
-      // Schema confirmed: relation to user profile is named 'user'.
-      // Relation to product is named 'product'.
-      const response = await fetch(`${STRAPI_URL}/api/leftorium-comments?filters[product][documentId][$eq]=${productId}&populate[user][populate]=avatar&sort=createdAt:desc`, {
+      const query = `filters[product][documentId][$eq]=${productId}&populate[user][populate]=avatar&sort=createdAt:desc&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
+      const response = await fetch(`${STRAPI_URL}/api/leftorium-comments?${query}`, {
         headers: getHeaders()
       });
 
-      if (!response.ok) return [];
+      if (!response.ok) return { data: [], meta: { pagination: { page, pageSize, pageCount: 0, total: 0 } } };
 
       const json = await response.json();
-      if (!json.data) return [];
+      if (!json.data) return { data: [], meta: { pagination: { page, pageSize, pageCount: 0, total: 0 } } };
 
-      return json.data.map((item: any) => {
+      const processedData = json.data.map((item: any) => {
         const data = item.attributes || item; 
         
         // Handle relation: 'user'
@@ -314,9 +349,14 @@ export const StrapiService = {
           }
         };
       });
+
+      return {
+        data: processedData,
+        meta: json.meta
+      };
     } catch (error) {
       console.error('Failed to fetch comments', error);
-      return [];
+      return { data: [], meta: { pagination: { page, pageSize, pageCount: 0, total: 0 } } };
     }
   },
 

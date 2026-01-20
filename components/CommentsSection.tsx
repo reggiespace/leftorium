@@ -25,14 +25,44 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const PAGE_SIZE = 5;
 
   useEffect(() => {
-    loadComments();
+    setPage(1);
+    setComments([]);
+    loadComments(1, true);
   }, [productId]);
 
-  const loadComments = async () => {
-    const data = await StrapiService.getComments(productId);
-    setComments(data);
+  const loadComments = async (pageNum: number, isInitial: boolean = false) => {
+    if (isInitial) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
+
+    try {
+      const resp = await StrapiService.getComments(productId, pageNum, PAGE_SIZE);
+      if (isInitial) {
+        setComments(resp.data);
+      } else {
+        setComments(prev => [...prev, ...resp.data]);
+      }
+      setHasMore(resp.meta.pagination.page < resp.meta.pagination.pageCount);
+    } catch (error) {
+      console.error('Failed to load comments', error);
+    } finally {
+      setIsLoading(false);
+      setIsLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    loadComments(nextPage);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +73,9 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
     try {
       await StrapiService.submitComment(productId, newComment);
       setNewComment('');
-      await loadComments(); // Reload to see new comment
+      // Reset to first page to see the new comment (sorted by desc)
+      setPage(1);
+      await loadComments(1, true);
     } catch (error) {
       console.error('Failed to submit comment', error);
       alert('Failed to post comment. Please try again.');
@@ -58,27 +90,46 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
 
       {/* Comment List */}
       <div className="space-y-6 mb-8">
-        {comments.length === 0 ? (
+        {isLoading && comments.length === 0 ? (
+          <div className="flex justify-center py-4">
+             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : comments.length === 0 ? (
           <p className="text-slate-500 italic">No comments yet. Be the first southpaw to speak up!</p>
         ) : (
-          comments.map((comment) => (
-            <div key={comment.id} className="flex gap-4">
-              <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
-                {comment.user.avatar ? (
-                  <img src={comment.user.avatar} alt={comment.user.username} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="font-bold text-slate-400">{comment.user.username.charAt(0).toUpperCase()}</span>
-                )}
-              </div>
-              <div >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-sm">{comment.user.username}</span>
-                  <span className="text-xs text-slate-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+          <>
+            {comments.map((comment) => (
+              <div key={comment.id} className="flex gap-4 group">
+                <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
+                  {comment.user.avatar ? (
+                    <img src={comment.user.avatar} alt={comment.user.username} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-slate-400">{comment.user.username.charAt(0).toUpperCase()}</span>
+                  )}
                 </div>
-                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{comment.content}</p>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-bold text-sm">{comment.user.username}</span>
+                    <span className="text-xs text-slate-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{comment.content}</p>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+
+            {hasMore && (
+              <div className="pt-4 flex justify-center">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleLoadMore} 
+                  disabled={isLoadingMore}
+                >
+                  {isLoadingMore ? 'Loading...' : 'View More Comments'}
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -111,3 +162,4 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
 };
 
 export default CommentsSection;
+
