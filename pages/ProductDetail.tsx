@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import Button from '../components/Button';
 import CommentsSection from '../components/CommentsSection';
 import LoadingSpinner from '../components/LoadingSpinner';
+import StarRating from '../components/StarRating';
+import { useAuth } from '../context/AuthContext';
 import { ProductService } from '../services/productService';
 import { Product } from '../types';
 
@@ -11,6 +13,7 @@ const ProductDetail: React.FC = () => {
   const [product, setProduct] = useState<Product | undefined>(undefined);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (id) {
@@ -58,10 +61,20 @@ const ProductDetail: React.FC = () => {
 
           <div className="space-y-6">
             <div className="flex flex-wrap justify-between items-start gap-4">
-               <div>
-                 <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">{product.name}</h1>
-                 <p className="text-primary font-bold text-sm uppercase tracking-widest">{product.category}</p>
-               </div>
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">{product.name}</h1>
+                  <div className="flex flex-col gap-3">
+                    <p className="text-primary font-bold text-sm uppercase tracking-widest">{product.category}</p>
+                    <StarRating 
+                      productId={product.id}
+                      initialAvg={product.ratingAvg || 0}
+                      initialCount={product.ratingCount || 0}
+                      interactive={true}
+                      userId={user?.id?.toString()}
+                      leftoriumUserId={(user as any)?.leftoriumUserId}
+                    />
+                  </div>
+                </div>
                <Button className="flex items-center gap-2">
                   <span className="material-symbols-outlined">share</span>
                   Share Struggle

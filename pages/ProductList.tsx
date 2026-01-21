@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import Button from '../components/Button';
 import ProductCard from '../components/ProductCard';
 import { ProductService } from '../services/productService';
 import { Category, Product } from '../types';
@@ -6,23 +7,60 @@ import { Category, Product } from '../types';
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [filter, setFilter] = useState<'all' | 'real' | 'fake'>('all');
   const [category, setCategory] = useState<string>('all');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [error, setError] = useState(false);
+
+  const PAGE_SIZE = 8;
+
+  const fetchProducts = useCallback(async (pageNum: number, isInitial: boolean = false) => {
+    if (isInitial) {
+      setLoading(true);
+      setError(false);
+    } else {
+      setLoadingMore(true);
+    }
+
+    try {
+      const isReal = filter === 'all' ? undefined : filter === 'real';
+      const resp = await ProductService.getProducts({
+        page: pageNum,
+        pageSize: PAGE_SIZE,
+        category: category,
+        isReal
+      });
+
+      if (isInitial) {
+        setProducts(resp.data);
+      } else {
+        setProducts(prev => [...prev, ...resp.data]);
+      }
+      
+      setHasMore(resp.meta.pagination.page < resp.meta.pagination.pageCount);
+    } catch (err) {
+      console.error('Failed to fetch products:', err);
+      if (isInitial) setError(true);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [filter, category]);
 
   useEffect(() => {
-    ProductService.getAll().then(data => {
-      setProducts(data);
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+    setPage(1);
+    fetchProducts(1, true);
+  }, [fetchProducts]);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchProducts(nextPage);
+  };
 
   const categories = ['all', ...Object.values(Category)];
-
-  const filteredProducts = products.filter(p => {
-    const filterMatch = filter === 'all' || (filter === 'real' ? p.isReal : !p.isReal);
-    const categoryMatch = category === 'all' || p.category === category;
-    return filterMatch && categoryMatch;
-  });
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -68,11 +106,11 @@ const ProductList: React.FC = () => {
         ))}
       </div>
 
-      {loading ? (
+      {loading && products.length === 0 ? (
          <div className="text-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
          </div>
-      ) : products.length === 0 ? (
+      ) : error ? (
         <div className="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50 dark:bg-slate-900/50">
            <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">cloud_off</span>
            <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No connection to inventory</h3>
@@ -83,16 +121,30 @@ const ProductList: React.FC = () => {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            {filteredProducts.map((product) => (
+            {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
-          {filteredProducts.length === 0 && (
+          {products.length === 0 ? (
             <div className="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
               <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">search_off</span>
               <p className="text-slate-500 font-bold">No products found matching your filters.</p>
             </div>
+          ) : (
+            hasMore && (
+              <div className="mt-12 text-center">
+                <Button 
+                  onClick={handleLoadMore} 
+                  disabled={loadingMore}
+                  variant="outline"
+                  size="lg"
+                  className="px-12"
+                >
+                  {loadingMore ? 'Loading More...' : 'Show More Products'}
+                </Button>
+              </div>
+            )
           )}
         </>
       )}
@@ -101,3 +153,4 @@ const ProductList: React.FC = () => {
 };
 
 export default ProductList;
+

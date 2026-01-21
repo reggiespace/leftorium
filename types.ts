@@ -28,6 +28,15 @@ export interface Product {
   isReal: boolean;
   features: { text: string; icon: string; }[];
   longDescription?: string;
+  ratingAvg?: number;
+  ratingCount?: number;
+}
+
+export interface Rating {
+  id: string;
+  score: number;
+  productId: string;
+  userId: string;
 }
 
 export interface User {

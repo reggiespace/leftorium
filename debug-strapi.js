@@ -33,6 +33,9 @@ async function run() {
 
     // 2. Fetch one leftorium-comment to see attributes and relation names
     await testQuery('/api/leftorium-comments?populate=*');
+
+    // 3. Fetch one leftorium-rating (if any) to see schema
+    await testQuery('/api/leftorium-ratings?populate=*');
 }
 
 run();

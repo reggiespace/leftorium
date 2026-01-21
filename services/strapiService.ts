@@ -61,7 +61,9 @@ const mapStrapiToProduct = (item: any): Product => {
           icon: f.icon || 'check_circle' // Default icon if missing
         }))
       : [],
-    longDescription: data.description
+    longDescription: data.description,
+    ratingAvg: data.rating_avg || 0,
+    ratingCount: data.rating_count || 0
   };
 };
 
@@ -383,6 +385,81 @@ export const StrapiService = {
 
     if (!response.ok) {
        throw new Error('Failed to post comment');
+    }
+    
+    return response.json();
+  },
+
+  async getUserRating(productId: string, leftoriumUserId: string) {
+    try {
+      const query = `filters[product][documentId][$eq]=${productId}&filters[user][documentId][$eq]=${leftoriumUserId}`;
+      const response = await fetch(`${STRAPI_URL}/api/leftorium-ratings?${query}`, {
+        headers: getHeaders()
+      });
+
+      if (!response.ok) return null;
+
+      const json = await response.json();
+      if (!json.data || json.data.length === 0) return null;
+
+      const item = json.data[0];
+      const data = item.attributes || item;
+
+      return {
+        id: item.documentId || item.id,
+        score: data.score
+      };
+    } catch (error) {
+      console.error('Failed to fetch user rating', error);
+      return null;
+    }
+  },
+
+  async submitRating(productId: string, score: number, leftoriumUserId: string, existingRatingId?: string) {
+    const method = existingRatingId ? 'PUT' : 'POST';
+    const url = existingRatingId 
+      ? `${STRAPI_URL}/api/leftorium-ratings/${existingRatingId}`
+      : `${STRAPI_URL}/api/leftorium-ratings`;
+
+    const body: any = {
+      data: {
+        score,
+        product: productId,
+        user: leftoriumUserId
+      }
+    };
+
+    const response = await fetch(url, {
+      method,
+      headers: getHeaders(),
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+       const errorData = await response.json().catch(() => ({}));
+       console.error('Strapi submitRating error:', errorData);
+       throw new Error(errorData.error?.message || 'Failed to submit rating');
+    }
+    
+    return response.json();
+  },
+
+  async updateProductStats(productId: string, ratingAvg: number, ratingCount: number) {
+    const response = await fetch(`${STRAPI_URL}/api/leftorium-products/${productId}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({
+        data: {
+          rating_avg: ratingAvg,
+          rating_count: ratingCount
+        }
+      })
+    });
+
+    if (!response.ok) {
+       const errorData = await response.json().catch(() => ({}));
+       console.error('Strapi updateProductStats error:', errorData);
+       throw new Error(errorData.error?.message || 'Failed to update product stats');
     }
     
     return response.json();

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../types';
+import StarRating from './StarRating';
 
 interface ProductCardProps {
   product: Product;
@@ -25,7 +26,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
       <div className="p-6 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-1">{product.name}</h3>
+            <StarRating 
+              productId={product.id}
+              initialAvg={product.ratingAvg || 0}
+              initialCount={product.ratingCount || 0}
+              interactive={false}
+            />
+          </div>
           <span className="text-primary font-black shrink-0 ml-2">{product.price}</span>
         </div>
         <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 mb-4 flex-grow">{product.description}</p>
