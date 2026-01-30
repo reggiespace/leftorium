@@ -1,3 +1,4 @@
+import { Info, Star } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { StrapiService } from '../services/strapiService';
 
@@ -41,35 +42,27 @@ const StarRating: React.FC<StarRatingProps> = ({
 
     setIsSubmitting(true);
     try {
-      // 1. Submit/Update rating
       await StrapiService.submitRating(productId, score, leftoriumUserId, existingRatingId);
       
-      // 2. Calculate new average and count
       let newCount = count;
       let newAvg = avg;
 
       if (!existingRatingId) {
-        // New rating
         newCount = count + 1;
         newAvg = ((avg * count) + score) / newCount;
       } else {
-        // Update rating
         newAvg = ((avg * count) - (userRating || 0) + score) / count;
       }
 
-      // 3. Update local state
       setUserRating(score);
       setAvg(newAvg);
       setCount(newCount);
       
-      // We don't have the new rating ID yet if it's new, but we can fetch it or just assume it's there
-      // For simplicity, let's re-fetch if we didn't have an ID
       if (!existingRatingId) {
         const res = await StrapiService.getUserRating(productId, leftoriumUserId);
         if (res) setExistingRatingId(res.id);
       }
 
-      // 4. Update Strapi product stats (Best effort)
       await StrapiService.updateProductStats(productId, newAvg, newCount);
       
     } catch (error) {
@@ -98,25 +91,22 @@ const StarRating: React.FC<StarRatingProps> = ({
             onMouseEnter={() => canVote && setHover(star)}
             onMouseLeave={() => canVote && setHover(null)}
           >
-            <span 
-              className={`material-symbols-outlined text-2xl ${
+            <Star 
+              className={`h-6 w-6 transition-colors ${
                 star <= currentScore
-                  ? 'text-yellow-400' 
-                  : 'text-slate-300 dark:text-slate-600'
+                  ? 'text-primary fill-primary' 
+                  : 'text-muted-foreground fill-none'
               }`}
-              style={{ fontVariationSettings: ` 'FILL' ${star <= currentScore ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24` }}
-            >
-              star
-            </span>
+            />
           </button>
         ))}
-        <span className="ml-2 text-sm font-bold text-slate-500">
+        <span className="ml-2 text-sm font-black text-muted-foreground italic">
           {avg.toFixed(1)} ({count} {count === 1 ? 'vote' : 'votes'})
         </span>
       </div>
       {interactive && !userId && (
-        <p className="text-xs text-primary font-black uppercase tracking-tighter mt-1 flex items-center gap-1">
-          <span className="material-symbols-outlined text-sm">info</span>
+        <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-1 flex items-center gap-1">
+          <Info className="h-3 w-3" />
           Log in to vote
         </p>
       )}

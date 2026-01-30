@@ -1,9 +1,11 @@
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Loader2, MessageSquare, Send } from "lucide-react";
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { StrapiService } from '../services/strapiService';
-import Button from './Button';
 
 interface Comment {
   id: number;
@@ -85,34 +87,40 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
   };
 
   return (
-    <div className="mt-12 bg-white dark:bg-[#1a2131] rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm">
-      <h3 className="text-2xl font-black mb-6">Community Thoughts</h3>
+    <div className="mt-16 bg-muted/30 rounded-[2.5rem] p-8 border-4 border-background shadow-inner">
+      <h3 className="text-2xl font-black mb-8 flex items-center gap-3 italic">
+        <MessageSquare className="h-6 w-6 text-primary" />
+        Community Thoughts
+      </h3>
 
       {/* Comment List */}
-      <div className="space-y-6 mb-8">
+      <div className="space-y-8 mb-10">
         {isLoading && comments.length === 0 ? (
-          <div className="flex justify-center py-4">
-             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="flex justify-center py-8">
+             <Loader2 className="h-8 w-8 text-primary animate-spin" />
           </div>
         ) : comments.length === 0 ? (
-          <p className="text-slate-500 italic">No comments yet. Be the first southpaw to speak up!</p>
+          <div className="bg-background/50 rounded-2xl p-8 text-center border-2 border-dashed border-muted">
+            <p className="text-muted-foreground italic font-medium">No comments yet. Be the first southpaw to speak up!</p>
+          </div>
         ) : (
           <>
             {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-4 group">
-                <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
-                  {comment.user.avatar ? (
-                    <img src={comment.user.avatar} alt={comment.user.username} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="font-bold text-slate-400">{comment.user.username.charAt(0).toUpperCase()}</span>
-                  )}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-sm">{comment.user.username}</span>
-                    <span className="text-xs text-slate-400">{new Date(comment.createdAt).toLocaleDateString()}</span>
+              <div key={comment.id} className="flex gap-4 group animate-in slide-in-from-bottom-2 duration-300">
+                <Avatar className="size-12 border-2 border-background shadow-md">
+                  {comment.user.avatar && <AvatarImage src={comment.user.avatar} alt={comment.user.username} />}
+                  <AvatarFallback className="bg-primary/10 text-primary font-black">
+                    {comment.user.username.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-1">
+                  <div className="flex items-center gap-3">
+                    <span className="font-black text-sm">{comment.user.username}</span>
+                    <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{new Date(comment.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{comment.content}</p>
+                  <div className="bg-background p-4 rounded-2xl rounded-tl-none border-2 border-muted/50 shadow-sm relative group-hover:border-primary/20 transition-colors">
+                    <p className="text-foreground/80 text-sm leading-relaxed">{comment.content}</p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -124,8 +132,10 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
                   size="sm" 
                   onClick={handleLoadMore} 
                   disabled={isLoadingMore}
+                  className="rounded-full px-6 border-2 font-bold"
                 >
-                  {isLoadingMore ? 'Loading...' : 'View More Comments'}
+                  {isLoadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  {isLoadingMore ? 'Loading More...' : 'View More Comments'}
                 </Button>
               </div>
             )}
@@ -135,24 +145,25 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
 
       {/* Add Comment Form */}
       {user ? (
-        <form onSubmit={handleSubmit} className="relative">
-          <textarea
+        <form onSubmit={handleSubmit} className="relative group">
+          <Textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Share your thoughts..."
-            className="w-full p-4 pr-32 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none h-32"
+            className="w-full p-6 pr-32 bg-background rounded-[2rem] border-2 border-muted focus:border-primary transition-all min-h-[120px] shadow-sm"
             required
           />
           <div className="absolute bottom-4 right-4">
-            <Button size="sm" type="submit" disabled={isLoading}>
-              {isLoading ? 'Posting...' : 'Post Comment'}
+            <Button size="sm" type="submit" disabled={isLoading || !newComment.trim()} className="rounded-xl px-6 h-11 font-bold shadow-lg shadow-primary/20">
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+              {isLoading ? 'Posting...' : 'Post'}
             </Button>
           </div>
         </form>
       ) : (
-        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-6 text-center">
-          <p className="text-slate-500 mb-4">You need to be logged in to join the discussion.</p>
-          <Button onClick={() => navigate('/auth')} variant="outline" size="sm">
+        <div className="bg-background/50 rounded-[2rem] p-10 text-center border-4 border-dashed border-muted">
+          <p className="text-muted-foreground font-medium mb-6">You need to be logged in to join the discussion.</p>
+          <Button onClick={() => navigate('/auth')} variant="default" className="rounded-full px-8 h-12 font-black italic shadow-lg shadow-primary/20">
             Log In or Sign Up
           </Button>
         </div>

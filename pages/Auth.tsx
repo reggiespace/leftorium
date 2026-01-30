@@ -1,7 +1,9 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ArrowRight, Chrome, Hand, ShieldCheck } from "lucide-react";
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../components/Button';
-import Input from '../components/Input';
 import { useAuth } from '../context/AuthContext';
 
 const Auth: React.FC = () => {
@@ -29,91 +31,103 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-6">
-      <div className="w-full max-w-[480px] bg-white dark:bg-[#1a2131] rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
-        <div className="relative h-48 bg-gradient-to-br from-primary/20 to-transparent flex flex-col items-center justify-center p-6">
-           <div className="size-20 bg-primary rounded-2xl flex items-center justify-center text-white shadow-2xl transform -rotate-6">
-              {/* Flipped Hand Icon for Auth Hero */}
-              <span className="material-symbols-outlined text-4xl inline-block scale-x-[-1]">front_hand</span>
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center p-6 bg-background">
+      <Card className="w-full max-w-[480px] rounded-[2.5rem] shadow-2xl overflow-hidden border-4">
+        <div className="relative h-48 bg-primary/10 flex flex-col items-center justify-center p-6 overflow-hidden">
+           <div className="absolute top-0 left-0 w-32 h-32 bg-accent/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+           <div className="absolute bottom-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+           
+           <div className="size-20 bg-primary rounded-[1.5rem] flex items-center justify-center text-primary-foreground shadow-xl transform -rotate-12 border-4 border-background relative z-10 transition-transform hover:rotate-0 duration-500">
+              <Hand className="h-10 w-10 scale-x-[-1]" />
            </div>
-           <p className="text-primary font-bold text-sm uppercase tracking-widest mt-6">Lefties Unite!</p>
+           <p className="text-primary font-black text-xs uppercase tracking-[0.3em] mt-6 relative z-10">Lefties Unite!</p>
         </div>
 
-        <div className="p-10 space-y-8">
+        <CardContent className="p-10 space-y-8">
            <div className="text-center">
-              <h1 className="text-3xl font-black tracking-tight">{isLogin ? 'Welcome Back' : 'Join the Resistance'}</h1>
-              <p className="text-slate-500 text-sm mt-2">The world is right-handed. Your account isn't.</p>
+              <h1 className="text-3xl font-black tracking-tight italic">{isLogin ? 'Welcome Back' : 'Join the Resistance'}</h1>
+              <p className="text-muted-foreground text-sm mt-2 font-medium">The world is right-handed. Your account isn't.</p>
            </div>
 
-           <div className="flex gap-2 bg-slate-100 dark:bg-background-dark p-1 rounded-xl">
+           <div className="flex gap-2 bg-muted p-1 rounded-2xl">
              <Button 
                onClick={() => { setIsLogin(true); setError(''); }}
-               variant={isLogin ? 'primary' : 'ghost'}
-               className={`flex-1 ${!isLogin && 'bg-transparent shadow-none text-slate-500'}`}
+               variant={isLogin ? 'default' : 'ghost'}
+               className={`flex-1 rounded-xl h-11 transition-all ${isLogin ? 'shadow-md' : 'text-muted-foreground'}`}
              >
                Login
              </Button>
              <Button 
                onClick={() => { setIsLogin(false); setError(''); }}
-               variant={!isLogin ? 'primary' : 'ghost'}
-               className={`flex-1 ${isLogin && 'bg-transparent shadow-none text-slate-500'}`}
+               variant={!isLogin ? 'default' : 'ghost'}
+               className={`flex-1 rounded-xl h-11 transition-all ${!isLogin ? 'shadow-md' : 'text-muted-foreground'}`}
              >
                Sign Up
              </Button>
            </div>
            
            {error && (
-             <div className="p-3 bg-red-100 text-red-600 rounded-lg text-sm text-center font-medium">
+             <div className="p-4 bg-destructive/10 text-destructive rounded-2xl text-sm text-center font-bold border border-destructive/20 animate-in fade-in zoom-in duration-300">
                {error}
              </div>
            )}
 
            <form className="space-y-4" onSubmit={handleSubmit}>
               {!isLogin && (
-                <Input 
-                  placeholder="Username" 
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                />
+                <div className="space-y-2">
+                  <Input 
+                    placeholder="Username" 
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    required
+                    className="h-12 rounded-xl bg-muted/50 border-transparent focus:bg-background transition-colors"
+                  />
+                </div>
               )}
-              <Input 
-                type="email" 
-                placeholder="Southpaw Email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <Input 
-                type="password" 
-                placeholder="Password" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="space-y-2">
+                <Input 
+                  type="email" 
+                  placeholder="Southpaw Email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="h-12 rounded-xl bg-muted/50 border-transparent focus:bg-background transition-colors"
+                />
+              </div>
+              <div className="space-y-2">
+                <Input 
+                  type="password" 
+                  placeholder="Password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="h-12 rounded-xl bg-muted/50 border-transparent focus:bg-background transition-colors"
+                />
+              </div>
               
-              <Button fullWidth className="mt-6 h-14 text-lg" disabled={isLoading}>
+              <Button size="lg" className="w-full mt-6 h-14 text-lg font-black rounded-2xl shadow-lg shadow-primary/20 group" disabled={isLoading}>
                  {isLoading ? 'Processing...' : (isLogin ? 'Enter the Hub' : 'Create Account')}
+                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </Button>
            </form>
 
            <div className="relative py-2">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200 dark:border-slate-800"></div></div>
-              <div className="relative flex justify-center text-xs uppercase"><span className="bg-white dark:bg-[#1a2131] px-2 text-slate-400">Or continue with</span></div>
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-muted-foreground/10"></div></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-background px-4 text-muted-foreground font-bold tracking-widest">Or continue with</span></div>
            </div>
 
            <div className="grid grid-cols-2 gap-4">
-              <Button variant="outline" type="button" className="text-sm">
-                 <img src="https://www.google.com/favicon.ico" className="w-4 h-4 mr-2" alt="G" />
+              <Button variant="outline" type="button" className="rounded-xl h-11 border-2 font-bold transition-all hover:bg-muted/50">
+                 <Chrome className="h-4 w-4 mr-2" />
                  Google
               </Button>
-              <Button variant="outline" type="button" className="text-sm">
-                 <span className="material-symbols-outlined text-sm mr-2">apple</span>
+              <Button variant="outline" type="button" className="rounded-xl h-11 border-2 font-bold transition-all hover:bg-muted/50">
+                 <ShieldCheck className="h-4 w-4 mr-2" />
                  Apple
               </Button>
            </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

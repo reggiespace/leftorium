@@ -1,5 +1,7 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CloudOff, Loader2, SearchX } from "lucide-react";
 import React, { useCallback, useEffect, useState } from 'react';
-import Button from '../components/Button';
 import ProductCard from '../components/ProductCard';
 import { ProductService } from '../services/productService';
 import { Category, Product } from '../types';
@@ -63,85 +65,94 @@ const ProductList: React.FC = () => {
   const categories = ['all', ...Object.values(Category)];
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
-        <div className="flex flex-wrap gap-3 order-2 md:order-1">
-          <button 
+    <div className="max-w-7xl mx-auto px-6 py-12 bg-background text-foreground min-h-screen">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16">
+        <div className="flex flex-wrap gap-2 order-2 md:order-1">
+          <Button 
+            variant={filter === 'all' ? "default" : "outline"} 
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-800'}`}
+            className="rounded-full px-6 transition-all"
           >
             All
-          </button>
-          <button 
+          </Button>
+          <Button 
+            variant={filter === 'real' ? "default" : "outline"} 
             onClick={() => setFilter('real')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'real' ? 'bg-green-500 text-white shadow-lg shadow-green-500/30' : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-800'}`}
+            className={`rounded-full px-6 transition-all ${filter === 'real' ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80' : ''}`}
           >
             Real
-          </button>
-          <button 
+          </Button>
+          <Button 
+            variant={filter === 'fake' ? "default" : "outline"} 
             onClick={() => setFilter('fake')}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'fake' ? 'bg-slate-600 text-white shadow-lg shadow-slate-600/30' : 'bg-white dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-800'}`}
+            className={`rounded-full px-6 transition-all ${filter === 'fake' ? 'bg-accent text-accent-foreground hover:bg-accent/80' : ''}`}
           >
             Fictional
-          </button>
+          </Button>
         </div>
 
         <div className="text-right order-1 md:order-2">
-          <h1 className="text-4xl font-black tracking-tight mb-3">Product Catalog</h1>
-          <p className="text-slate-500 dark:text-slate-400 max-w-xl ml-auto">
-            A curated collection of tools designed specifically for the left-handed life. Some are game-changers, others are just for awareness.
+          <h1 className="text-4xl lg:text-5xl font-black tracking-tight mb-3 italic">Product Catalog</h1>
+          <p className="text-muted-foreground max-w-xl ml-auto text-lg leading-relaxed">
+            A curated collection of tools designed specifically for the left-handed life.
           </p>
         </div>
       </div>
 
-      <div className="flex gap-4 mb-10 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="flex gap-3 mb-12 overflow-x-auto pb-4 scrollbar-hide">
         {categories.map((cat) => (
-          <button
+          <Badge
             key={cat}
+            variant={category === cat ? "default" : "outline"}
+            className={`cursor-pointer px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest transition-all ${category === cat ? '' : 'hover:bg-muted'}`}
             onClick={() => setCategory(cat)}
-            className={`whitespace-nowrap px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest transition-all ${category === cat ? 'bg-primary text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-300'}`}
           >
             {cat}
-          </button>
+          </Badge>
         ))}
       </div>
 
       {loading && products.length === 0 ? (
-         <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+         <div className="text-center py-20 flex flex-col items-center">
+            <Loader2 className="h-10 w-10 text-primary animate-spin" />
          </div>
       ) : error ? (
-        <div className="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50 dark:bg-slate-900/50">
-           <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">cloud_off</span>
-           <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">No connection to inventory</h3>
-           <p className="text-slate-500 max-w-md mx-auto">
-             We couldn't load the products from Strapi. Please ensure your local server is running at {import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337'}.
+        <div className="text-center py-20 border-4 border-dashed rounded-[2rem] bg-muted/20 flex flex-col items-center">
+           <CloudOff className="h-16 w-16 text-muted-foreground mb-4" />
+           <h3 className="text-2xl font-black mb-2">No connection to inventory</h3>
+           <p className="text-muted-foreground max-w-md mx-auto px-4">
+             We couldn't load the products from Strapi. Please ensure your local server is running.
            </p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
 
           {products.length === 0 ? (
-            <div className="text-center py-20 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
-              <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">search_off</span>
-              <p className="text-slate-500 font-bold">No products found matching your filters.</p>
+            <div className="text-center py-20 border-4 border-dashed rounded-[2rem] flex flex-col items-center">
+              <SearchX className="h-16 w-16 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground font-bold text-xl">No products found matching your filters.</p>
             </div>
           ) : (
             hasMore && (
-              <div className="mt-12 text-center">
+              <div className="mt-16 text-center">
                 <Button 
                   onClick={handleLoadMore} 
                   disabled={loadingMore}
                   variant="outline"
                   size="lg"
-                  className="px-12"
+                  className="px-16 h-14 font-black text-lg rounded-full border-2"
                 >
-                  {loadingMore ? 'Loading More...' : 'Show More Products'}
+                  {loadingMore ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Loading...
+                    </>
+                  ) : 'Show More Products'}
                 </Button>
               </div>
             )

@@ -20,9 +20,28 @@ Leftorium is a curated platform and community hub designed specifically for the 
 ## 🛠 Tech Stack
 
 -   **Frontend**: React 19, TypeScript, Vite
--   **Styling**: Vanilla CSS (Modern Aesthetics)
+-   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/)
+-   **Icons**: [Lucide React](https://lucide.dev/)
 -   **Backend**: [Strapi 5](https://strapi.io/)
 -   **AI Integration**: Google Gemini API for content assistance
+
+## 🎨 UI & Design System
+
+### Design System Page
+The application features a comprehensive design system built with **shadcn/ui** and a custom **pastel color palette**. You can preview all UI components, tokens, and color variables in development:
+
+👉 **URL**: `/dev/design-system` (e.g., `http://localhost:3002/#/dev/design-system`)
+
+### Production Safeguard
+The Design System page is **development-only**. It is conditionally rendered in `App.tsx` using `import.meta.env.DEV`:
+
+```tsx
+{import.meta.env.DEV && (
+  <Route path="/dev/design-system" element={<DesignSystem />} />
+)}
+```
+
+This ensures that the route is inaccessible and the code is stripped from production builds.
 
 ## 🏁 Getting Started
 

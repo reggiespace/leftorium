@@ -12,6 +12,8 @@ const About = lazy(() => import('./pages/About'));
 const Submit = lazy(() => import('./pages/Submit'));
 const Auth = lazy(() => import('./pages/Auth'));
 
+const DesignSystem = lazy(() => import('./pages/DesignSystem'));
+
 const App: React.FC = () => {
   return (
     <Router>
@@ -25,6 +27,9 @@ const App: React.FC = () => {
               <Route path="/about" element={<About />} />
               <Route path="/submit" element={<Submit />} />
               <Route path="/auth" element={<Auth />} />
+              {import.meta.env.DEV && (
+                <Route path="/dev/design-system" element={<DesignSystem />} />
+              )}
             </Routes>
           </Suspense>
         </Layout>
