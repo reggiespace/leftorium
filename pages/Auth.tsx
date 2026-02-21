@@ -87,7 +87,7 @@ const Auth: React.FC = () => {
               <div className="space-y-2">
                 <Input 
                   type="email" 
-                  placeholder="Southpaw Email" 
+                  placeholder="Leftorian Email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

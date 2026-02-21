@@ -93,7 +93,7 @@ const ProductDetail: React.FC = () => {
                  "{product.description}"
                </p>
                <p className="text-lg leading-relaxed text-foreground/80">
-                 {product.longDescription || "This specialized tool was designed with the biomechanics of left-handed rotation and grip in mind. It addresses the common frustrations that southpaws face in a world dominated by right-handed defaults."}
+                 {product.longDescription || "This specialized tool was designed with the biomechanics of left-handed rotation and grip in mind. It addresses the common frustrations that lefties face in a world dominated by right-handed defaults."}
                </p>
             </div>
 
@@ -142,7 +142,7 @@ const ProductDetail: React.FC = () => {
                     <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
                       <Info className="h-12 w-12" />
                     </div>
-                    <p className="text-[10px] font-black text-accent mb-2 uppercase tracking-widest">Southpaw Secret</p>
+                    <p className="text-[10px] font-black text-accent mb-2 uppercase tracking-widest">Leftorian Secret</p>
                     <p className="text-sm text-foreground/80 leading-relaxed font-medium">Did you know? Leonardo da Vinci wrote his journals from right to left in mirror-image to avoid ink smudges.</p>
                   </div>
                 </div>

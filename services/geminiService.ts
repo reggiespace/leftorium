@@ -3,7 +3,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
-export const generateSouthpawIdea = async (problem: string) => {
+export const generateLeftorianIdea = async (problem: string) => {
   if (!process.env.API_KEY) return null;
 
   try {

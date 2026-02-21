@@ -1,6 +1,6 @@
 # 👈 Leftorium: Future Features Roadmap
 
-This document serves as a brainstorm and tracker for upcoming features to make the world 10% better for southpaws.
+This document serves as a brainstorm and tracker for upcoming features to make the world 10% better for lefties.
 
 ## 🏆 Tier 1: Core Experience & Personalization
 Focuses on the individual user's journey and tailored interactions.
@@ -11,12 +11,12 @@ Focuses on the individual user's journey and tailored interactions.
 - [ ] **Dark Mode / Premium Aesthetics**: Refine the visual design with a high-end dark theme and smooth glassmorphism.
 
 ## 🤝 Tier 2: Community & Social
-Building the 800-million-strong southpaw network.
+Building the 800-million-strong leftorian network.
 
 - [ ] **Community Discussions**: A dedicated space for "Lefty Problems" - share tips on using right-handed scissors, guitars, or desks.
 - [ ] **Verified Lefty Reviews**: Users can upload photos/videos showing how they use specific gear "lefty-style".
-- [ ] **Gamification & Badges**: Earn status like "Sinister Sensei" or "Southpaw Scientist" for pitching ideas and rating gear.
-- [ ] **Member Directory**: See other southpaws in the community (with privacy controls).
+- [ ] **Gamification & Badges**: Earn status like "Sinister Sensei" or "Leftorian Scientist" for pitching ideas and rating gear.
+- [ ] **Member Directory**: See other lefties in the community (with privacy controls).
 
 ## 💡 Tier 3: The Idea Lab (Innovation)
 Taking user pitches to the next level.
@@ -30,9 +30,9 @@ Taking user pitches to the next level.
 Improving how users find and learn about gear.
 
 - [ ] **"Lefty Friendliness" Score**: A community-driven rating for products that aren't explicitly left-handed but work well for us.
-- [ ] **Curated Collections**: "Back to School for Lefties," "The Southpaw Chef Kit," "Southpaw Gamer setup."
+- [ ] **Curated Collections**: "Back to School for Lefties," "The Leftorian Chef Kit," "Leftorian Gamer setup."
 - [ ] **Semantic Search**: Use AI to find gear based on natural language queries (e.g., "something to help me write without smudging").
-- [ ] **Left-Handed Hall of Fame**: Articles and profiles on famous and historical southpaws.
+- [ ] **Left-Handed Hall of Fame**: Articles and profiles on famous and historical lefties.
 
 ## 🛠 Tier 5: Technical Excellence
 Under-the-hood improvements.

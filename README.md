@@ -2,11 +2,11 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# 👈 Leftorium: The Southpaw Sanctuary
+# 👈 Leftorium: The Leftorian Sanctuary
 
 ### "The world is right-handed. We’re here to fix that."
 
-Leftorium is a curated platform and community hub designed specifically for the 10% of the population that navigates a right-aligned world. From ergonomic tools to a dedicated lab for pitching new ideas, we make life 10% better for every southpaw.
+Leftorium is a curated platform and community hub designed specifically for the 10% of the population that navigates a right-aligned world. From ergonomic tools to a dedicated lab for pitching new ideas, we make life 10% better for every lefty.
 
 ---
 
@@ -14,7 +14,7 @@ Leftorium is a curated platform and community hub designed specifically for the 
 
 -   **Curated Gear**: Discover high-quality products built with left-handed ergonomics in mind.
 -   **The Idea Lab**: Pitch and vote on innovative solutions to daily left-handed struggles.
--   **Southpaw Community**: Share feedback and connect with over 800 million world-wide southpaws.
+-   **Leftorian Community**: Share feedback and connect with over 800 million world-wide lefties.
 -   **Dynamic Backend**: Powered by Strapi CMS for real-time updates and community content management.
 
 ## 🛠 Tech Stack

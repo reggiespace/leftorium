@@ -27,7 +27,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isReal: false,
     features: [
       { text: 'Reverse numbering', icon: 'swap_horiz' }, 
-      { text: 'Southpaw lock mechanism', icon: 'lock' }, 
+      { text: 'Leftorian lock mechanism', icon: 'lock' }, 
       { text: 'Friction-less draw', icon: 'speed' }
     ],
     longDescription: 'Have you ever tried to read a tape measure while holding it in your left hand? The numbers are upside down! This concept flip-measures from right-to-left, making measurements intuitive for the 10%.'

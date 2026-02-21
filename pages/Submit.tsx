@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-// import { generateSouthpawIdea } from '../services/geminiService';
+// import { generateLeftorianIdea } from '../services/geminiService';
 import { StrapiService } from '../services/strapiService';
 import { Category } from '../types';
 
@@ -112,7 +112,7 @@ const Submit: React.FC = () => {
   return (
     <div className="max-w-[800px] mx-auto px-6 py-16">
       <div className="text-center mb-12">
-         <h1 className="text-4xl font-black tracking-tight mb-4">The Southpaw Idea Lab</h1>
+         <h1 className="text-4xl font-black tracking-tight mb-4">The Leftorian Idea Lab</h1>
          <p className="text-slate-600 dark:text-slate-400 text-lg">
            Help us end the right-handed monopoly. Submit a real ergonomic tool or pitch a genius fake concept.
          </p>

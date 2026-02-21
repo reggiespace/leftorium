@@ -98,7 +98,7 @@ const Home: React.FC = () => {
             <div className="text-center mt-16">
                <Link to="/products">
                   <Button variant="link" size="lg" className="text-primary font-bold text-lg hover:no-underline group">
-                    View All Southpaw Products
+                    View All Leftorian Products
                     <ChevronRight className="ml-1 h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Button>
                </Link>
@@ -148,7 +148,7 @@ const Home: React.FC = () => {
                   <p className="text-primary/60 text-sm font-bold uppercase tracking-widest mb-4">Community</p>
                   <h3 className="text-primary text-6xl font-black italic">800M+</h3>
                   <div className="w-12 h-1 bg-accent mx-auto mt-4 rounded-full"></div>
-                  <p className="text-xs text-muted-foreground mt-4 font-bold">World-Wide Southpaws</p>
+                  <p className="text-xs text-muted-foreground mt-4 font-bold">World-Wide Leftorians</p>
                </div>
             </div>
           </div>

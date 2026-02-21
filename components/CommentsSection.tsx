@@ -101,7 +101,7 @@ const CommentsSection: React.FC<CommentsSectionProps> = ({ productId }) => {
           </div>
         ) : comments.length === 0 ? (
           <div className="bg-background/50 rounded-2xl p-8 text-center border-2 border-dashed border-muted">
-            <p className="text-muted-foreground italic font-medium">No comments yet. Be the first southpaw to speak up!</p>
+            <p className="text-muted-foreground italic font-medium">No comments yet. Be the first lefty to speak up!</p>
           </div>
         ) : (
           <>
