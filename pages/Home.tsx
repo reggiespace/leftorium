@@ -55,9 +55,9 @@ const Home: React.FC = () => {
           </div>
         </div>
 
-        <div className="w-full lg:w-1/2 bg-muted/30 flex items-center justify-center p-8 lg:p-16 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"></div>
-          <div className="relative z-10 w-full max-w-xl aspect-square rounded-[2rem] overflow-hidden shadow-2xl border-4 border-background">
+        <div className="w-full lg:w-1/2 bg-secondary text-secondary-foreground flex items-center justify-center p-8 lg:p-16 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/10 to-transparent"></div>
+          <div className="relative z-10 w-full max-w-xl aspect-square rounded-[2rem] overflow-hidden shadow-2xl border-4 border-secondary/50">
              <img 
                src="https://plus.unsplash.com/premium_photo-1679496828364-380f02ee5e0c?q=80&w=928&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
                alt="Left handed" 
