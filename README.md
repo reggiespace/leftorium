@@ -1,92 +1,53 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# leftorium.ca
 
-# 👈 Leftorium: The Leftorian Sanctuary
+> Everything here is built the other way round.
 
-### "The world is right-handed. We’re here to fix that."
+Leftorium is a fictional awareness project disguised as a shop: a catalogue
+of left-handed tools — some real, some invented — that calls attention to
+how much of the physical world defaults to right-handed. Nothing is for
+sale. This build implements a design produced in Claude Design (Nocturne
+design system: dark blurple, outlined buttons, quiet badges) on top of this
+repo's existing React/Vite/Strapi scaffold.
 
-Leftorium is a curated platform and community hub designed specifically for the 10% of the population that navigates a right-aligned world. From ergonomic tools to a dedicated lab for pitching new ideas, we make life 10% better for every lefty.
+## Tech stack
 
----
+- React 19 + TypeScript + Vite, `HashRouter` (so a static host needs no
+  server-side rewrite rules)
+- Tailwind CSS v4, hand-ported Nocturne design tokens — see `globals.css` /
+  `tailwind.config.ts`
+- Strapi 5 as the (optional) content backend — see [STRAPI_SETUP.md](STRAPI_SETUP.md)
+  and [`/strapi-schema`](strapi-schema). The site works with zero backend:
+  it falls back to the 12 seed products in `mockData.ts`.
 
-## 🚀 Core Features
+## What's implemented
 
--   **Curated Gear**: Discover high-quality products built with left-handed ergonomics in mind.
--   **The Idea Lab**: Pitch and vote on innovative solutions to daily left-handed struggles.
--   **Leftorian Community**: Share feedback and connect with over 800 million world-wide lefties.
--   **Dynamic Backend**: Powered by Strapi CMS for real-time updates and community content management.
+All six sections from the design: landing (hero, most-viewed shelf, stats
+band), catalogue (real/invented filter, views/likes/A–Z sort), product
+detail (decorative local-only likes, read-only comments), submit-a-product
+(real find vs. Idea Lab pitch, awaiting-approval state), about, and the
+nav/footer shell — including both easter eggs (the Lefty/Righty toggle and
+the "mirror the whole site" footer link).
 
-## 🛠 Tech Stack
+**Deliberately not implemented yet:** user registration/login, and anything
+that depends on it (persisted like/vote counts, public comment submission,
+star ratings). There's no way to count likes or attribute comments
+per-person without accounts, so for now likes are decorative and
+per-browser only (`lib/useLikes.ts`, via `localStorage`, never sent to the
+backend), and comments are read-only, admin-curated flavor text. Revisit
+once there's a registration story.
 
--   **Frontend**: React 19, TypeScript, Vite
--   **Styling**: [Tailwind CSS v4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/)
--   **Icons**: [Lucide React](https://lucide.dev/)
--   **Backend**: [Strapi 5](https://strapi.io/)
--   **AI Integration**: Google Gemini API for content assistance
+## Getting started
 
-## 🎨 UI & Design System
-
-### Design System Page
-The application features a comprehensive design system built with **shadcn/ui** and a custom **pastel color palette**. You can preview all UI components, tokens, and color variables in development:
-
-👉 **URL**: `/dev/design-system` (e.g., `http://localhost:3002/#/dev/design-system`)
-
-### Production Safeguard
-The Design System page is **development-only**. It is conditionally rendered in `App.tsx` using `import.meta.env.DEV`:
-
-```tsx
-{import.meta.env.DEV && (
-  <Route path="/dev/design-system" element={<DesignSystem />} />
-)}
+```bash
+pnpm install
+cp .env.sample .env.local   # set VITE_STRAPI_URL if you have a Strapi instance
+pnpm dev
 ```
 
-This ensures that the route is inaccessible and the code is stripped from production builds.
+## Deployment
 
-## 🏁 Getting Started
-
-### Prerequisites
-
--   [Node.js](https://nodejs.org/) (LTS recommended)
--   [pnpm](https://pnpm.io/) (preferred) or npm
-
-### Installation
-
-1.  **Clone the Repository**
-    ```bash
-    git clone [your-repo-url]
-    cd leftorium
-    ```
-
-2.  **Install Dependencies**
-    ```bash
-    pnpm install
-    # or
-    npm install
-    ```
-
-3.  **Environment Setup**
-    Create a `.env.local` file based on [.env.sample](.env.sample):
-    ```env
-    VITE_STRAPI_URL=http://localhost:1337
-    # Optional: GEMINI_API_KEY=your-key-here
-    ```
-
-4.  **Run Locally**
-    ```bash
-    pnpm dev
-    # or
-    npm run dev
-    ```
-
-## 🏗 Backend Configuration
-
-Existing product and user data are managed via Strapi. For detailed instructions on setting up your local Strapi instance, publishing content, and fixing permission issues, please refer to:
-
-👉 **[STRAPI_SETUP.md](STRAPI_SETUP.md)**
-
----
-
-<div align="center">
-Made with ❤️ for the lefties.
-</div>
+See [`/docker`](docker) and [`DEPLOYMENT.md`](DEPLOYMENT.md) at the repo
+root for the Dokploy setup (Dockerfile + nginx + runtime env injection, so
+`VITE_STRAPI_URL` and friends can change without rebuilding the image), and
+[`/strapi-config`](strapi-config) for pointing Strapi's media library at
+Garage S3 instead of local disk.

@@ -1,0 +1,80 @@
+{
+  "kind": "collectionType",
+  "collectionName": "leftorium_products",
+  "info": {
+    "singularName": "leftorium-product",
+    "pluralName": "leftorium-products",
+    "displayName": "Leftorium Product",
+    "description": "A catalogue entry — real or AI-invented — on leftorium.ca"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "title"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["Kitchen", "Office", "Workshop", "Sport", "Idea Lab"],
+      "required": true
+    },
+    "is_real": {
+      "type": "boolean",
+      "default": true,
+      "required": true
+    },
+    "price": {
+      "type": "string",
+      "default": "Concept"
+    },
+    "blurb": {
+      "type": "text",
+      "required": true,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "text",
+      "required": true
+    },
+    "features": {
+      "type": "json",
+      "description": "Array of short strings, e.g. [\"Spiral bound on the right edge\", ...]"
+    },
+    "cost_note": {
+      "type": "text",
+      "description": "Answers 'the right-handed version costs a lefty ___'"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "img_label": {
+      "type": "string",
+      "description": "Placeholder caption shown until `image` is uploaded"
+    },
+    "likes_seed": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "views_seed": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "comments": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::leftorium-comment.leftorium-comment",
+      "mappedBy": "product"
+    }
+  }
+}

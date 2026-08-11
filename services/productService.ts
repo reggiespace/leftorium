@@ -1,57 +1,35 @@
+import { MOCK_PRODUCTS } from '../mockData';
 import { Product } from '../types';
-import { GetProductsOptions, PaginatedResponse, StrapiService } from './strapiService';
+import { StrapiService } from './strapiService';
+
+// Strapi is the source of truth once products are published there; until
+// then (or if it's unreachable) the site falls back to the 12 seed
+// products ported from the Claude Design export, so the catalogue is
+// never empty.
+let cachedAll: Product[] | null = null;
+
+async function loadAll(): Promise<Product[]> {
+  if (cachedAll) return cachedAll;
+  try {
+    const resp = await StrapiService.getProducts({ pageSize: 200 });
+    cachedAll = resp.data.length > 0 ? resp.data : MOCK_PRODUCTS;
+  } catch (error) {
+    console.warn('Failed to fetch from Strapi, using local catalogue:', error);
+    cachedAll = MOCK_PRODUCTS;
+  }
+  return cachedAll;
+}
 
 export const ProductService = {
-  getProducts: async (options: GetProductsOptions = {}): Promise<PaginatedResponse<Product>> => {
-    try {
-      return await StrapiService.getProducts(options);
-    } catch (error) {
-      console.warn('Failed to fetch from Strapi:', error);
-      return { data: [], meta: { pagination: { page: 1, pageSize: 8, pageCount: 0, total: 0 } } };
-    }
-  },
+  getAll: (): Promise<Product[]> => loadAll(),
 
-  getAll: async (): Promise<Product[]> => {
-    try {
-      const resp = await StrapiService.getProducts({ pageSize: 100 }); // High limit for "all"
-      return resp.data;
-    } catch (error) {
-      console.warn('Failed to fetch from Strapi, returning empty list:', error);
-      return [];
-    }
-  },
-
-  getFeatured: async (limit: number = 3): Promise<Product[]> => {
-    try {
-      const resp = await StrapiService.getProducts({ pageSize: limit });
-      return resp.data;
-    } catch (error) {
-      return [];
-    }
+  getFeatured: async (limit = 4): Promise<Product[]> => {
+    const all = await loadAll();
+    return [...all].sort((a, b) => b.viewsSeed - a.viewsSeed).slice(0, limit);
   },
 
   getById: async (idOrSlug: string): Promise<Product | undefined> => {
-    try {
-      if (isNaN(Number(idOrSlug))) {
-         const bySlug = await StrapiService.getProductBySlug(idOrSlug);
-         if (bySlug) return bySlug;
-      }
-      
-      const resp = await StrapiService.getProducts({ pageSize: 100 });
-      return resp.data.find(p => p.id === idOrSlug || p.slug === idOrSlug);
-    } catch (error) {
-      return undefined;
-    }
+    const all = await loadAll();
+    return all.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
   },
-
-  getRelated: async (id: string, limit: number = 3): Promise<Product[]> => {
-    try {
-      const resp = await StrapiService.getProducts({ pageSize: limit + 1 });
-      return resp.data.filter(p => p.id !== id).slice(0, limit);
-    } catch (error) {
-      return [];
-    }
-  }
 };
-
-

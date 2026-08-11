@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "leftorium_suggestions",
+  "info": {
+    "singularName": "leftorium-suggestion",
+    "pluralName": "leftorium-suggestions",
+    "displayName": "Leftorium Suggestion",
+    "description": "A visitor-submitted product idea (real find or Idea Lab pitch), awaiting moderation"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": ["Kitchen", "Office", "Workshop", "Sport", "Idea Lab"],
+      "required": true
+    },
+    "is_real": {
+      "type": "boolean",
+      "default": false,
+      "required": true,
+      "description": "true = submitted via the 'a real product I found' tab, false = 'a product that should exist'"
+    },
+    "source_or_look": {
+      "type": "text",
+      "required": true,
+      "description": "Where to find it (real) or what it looks like (fake)"
+    },
+    "reasoning": {
+      "type": "text",
+      "required": true,
+      "description": "Why a right-handed person has never noticed this problem"
+    }
+  }
+}

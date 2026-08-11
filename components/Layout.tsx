@@ -1,127 +1,146 @@
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Book, Globe, Hand, Home, Menu, FlaskConical as Science, Share2, ShoppingBag } from "lucide-react";
+import { Menu } from "lucide-react";
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useUIMode } from '../context/UIModeContext';
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
+const NAV_LINKS = [
+  { name: 'Catalogue', path: '/products' },
+  { name: 'Who we are', path: '/about' },
+  { name: 'Submit a product', path: '/submit' },
+];
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
-
-  const navLinks = [
-    { name: 'Home', path: '/', icon: <Home className="h-5 w-5" /> },
-    { name: 'Products', path: '/products', icon: <ShoppingBag className="h-5 w-5" /> },
-    { name: 'The Lab', path: '/submit', icon: <Science className="h-5 w-5" /> },
-    { name: 'Our Story', path: '/about', icon: <Book className="h-5 w-5" /> },
-  ];
+  const { righty, toggleRighty, mirror, toggleMirror } = useUIMode();
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-300">
-      {/* Top Navbar */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {/* Mobile Sidebar (Sheet) */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-6 w-6 text-primary" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-72">
-                <SheetHeader className="mb-8">
-                  <SheetTitle className="text-xl font-black text-primary">Lefty Navigation</SheetTitle>
-                </SheetHeader>
-                <nav className="space-y-4">
-                  {navLinks.map((link) => (
-                    <SheetClose asChild key={link.path}>
-                      <Link 
-                        to={link.path}
-                        className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-bold ${isActive(link.path) ? 'bg-primary text-primary-foreground shadow-lg' : 'text-muted-foreground hover:bg-muted'}`}
-                      >
-                        {link.icon}
-                        {link.name}
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
-
-             {/* User Profile */}
-             <Button 
-                variant="ghost" 
-                size="icon" 
-                className="rounded-full border-2 border-primary/20 hover:border-primary overflow-hidden h-10 w-10 p-0"
-                onClick={() => navigate('/auth')}
-             >
-                <Avatar className="h-full w-full">
-                  <AvatarImage src="https://picsum.photos/seed/user123/100/100" />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-             </Button>
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <header className="sticky top-0 z-40 flex items-center justify-between gap-6 px-5 md:px-10 py-3.5 bg-background/86 backdrop-blur-md border-b border-border">
+        <div
+          className="flex items-center gap-2.5 cursor-pointer"
+          onClick={() => navigate('/')}
+        >
+          <div className="w-[26px] h-[26px] border border-primary rounded-lg grid place-items-center text-primary text-[13px] leading-none">
+            ◀
           </div>
-
-          <div className="flex items-center gap-3 md:hidden">
-             <h1 className="text-lg font-black tracking-tight">Leftorium</h1>
+          <div className="flex flex-col leading-[1.05]">
+            <span className="font-semibold tracking-[-0.02em] text-base">
+              leftorium<span className="text-ink-faint">.ca</span>
+            </span>
+            <span className="font-mono-tag text-[10px] tracking-[0.14em] text-ink-faint uppercase">
+              the 10% store
+            </span>
           </div>
+        </div>
 
-          <div className="hidden md:flex items-center gap-8">
-            <nav className="flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.path}
-                  to={link.path}
-                  className={`text-sm font-bold transition-colors ${isActive(link.path) ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </nav>
-            
-            <Link to="/" className="flex items-center gap-2 group ml-4">
-              <h1 className="text-xl font-black tracking-tight">Leftorium</h1>
-              <div className="p-1.5 bg-primary rounded-lg text-primary-foreground group-hover:-rotate-12 transition-transform">
-                <Hand className="h-4 w-4 scale-x-[-1]" />
-              </div>
+        <nav className="hidden md:flex items-center gap-1.5">
+          {NAV_LINKS.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={`px-3 py-1.5 rounded-lg text-sm transition-colors hover:bg-white/[0.07] ${
+                isActive(link.path) ? 'text-foreground' : 'text-ink-dim'
+              }`}
+            >
+              {link.name}
             </Link>
-          </div>
+          ))}
+          <div className="w-px h-[22px] bg-border mx-2" />
+          <button
+            onClick={toggleRighty}
+            className="flex items-center gap-2 px-[11px] py-1.5 border border-border rounded-lg font-mono-tag text-[11px] tracking-[0.1em] uppercase text-ink-dim hover:border-primary hover:text-foreground transition-colors"
+          >
+            <span
+              className="w-[7px] h-[7px] rounded-full"
+              style={{ background: righty ? 'var(--ink-faint)' : 'var(--primary)' }}
+            />
+            {righty ? 'Righty' : 'Lefty'}
+          </button>
+        </nav>
+
+        <div className="flex items-center gap-3 md:hidden">
+          <button
+            onClick={toggleRighty}
+            className="flex items-center gap-2 px-2.5 py-1.5 border border-border rounded-lg font-mono-tag text-[11px] tracking-[0.1em] uppercase text-ink-dim"
+          >
+            <span
+              className="w-[7px] h-[7px] rounded-full"
+              style={{ background: righty ? 'var(--ink-faint)' : 'var(--primary)' }}
+            />
+            {righty ? 'Righty' : 'Lefty'}
+          </button>
+          <Sheet>
+            <SheetTrigger asChild>
+              <button className="p-1.5 text-primary" aria-label="Open navigation">
+                <Menu className="h-6 w-6" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 bg-background border-border">
+              <SheetHeader className="mb-8">
+                <SheetTitle className="text-foreground">leftorium.ca</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-2">
+                {NAV_LINKS.map((link) => (
+                  <SheetClose asChild key={link.path}>
+                    <Link
+                      to={link.path}
+                      className={`px-4 py-3 rounded-lg text-sm ${
+                        isActive(link.path) ? 'bg-white/[0.07] text-foreground' : 'text-ink-dim'
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  </SheetClose>
+                ))}
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 
-      <main className="flex-1">
-        {children}
-      </main>
+      <main className="flex-1">{children}</main>
 
-      <footer className="border-t py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex items-center gap-3 opacity-60">
-            <Hand className="h-5 w-5 text-primary scale-x-[-1]" />
-            <p className="text-sm font-bold">Leftorium &copy; 2024. Designed for the 10%.</p>
+      <footer className="border-t border-border px-5 md:px-10 py-9">
+        <div className="max-w-[1320px] mx-auto flex flex-wrap items-center justify-between gap-6">
+          <div>
+            <p className="mb-1 text-sm text-ink-dim">leftorium.ca — a fictional shop for a real problem.</p>
+            <p className="font-mono-tag text-[11px] text-ink-ghost">
+              No products sold. No affiliate links. Some products imaginary.
+            </p>
           </div>
-          <div className="flex gap-8 text-sm font-medium text-muted-foreground">
-            <Link to="/about" className="hover:text-primary transition-colors">Our Story</Link>
-            <Link to="/products" className="hover:text-primary transition-colors">Shop Gear</Link>
-            <a href="#" className="hover:text-primary transition-colors">Accessibility</a>
-          </div>
-          <div className="flex gap-4">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground">
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground">
-              <Globe className="h-4 w-4" />
-            </Button>
-          </div>
+          <button
+            onClick={toggleMirror}
+            className="font-mono-tag text-[10px] tracking-[0.14em] uppercase text-ink-ghost hover:text-primary transition-colors"
+          >
+            {mirror ? 'Unmirror the world' : 'Mirror the whole site'}
+          </button>
         </div>
       </footer>
+
+      {righty && (
+        <div className="fixed bottom-6 left-6 z-[60] max-w-[330px] p-4 bg-card border border-border rounded-2xl shadow-2xl animate-nag">
+          <div className="font-mono-tag text-[10px] tracking-[0.14em] uppercase text-primary mb-1.5">
+            Righty mode active
+          </div>
+          <p className="mb-2.5 text-[13px] text-ink-dim text-pretty">
+            Everything has moved to the far side and the ink is smudging under your hand. This is a mild version of an ordinary Tuesday.
+          </p>
+          <button
+            onClick={toggleRighty}
+            className="inline-flex px-3 py-1.5 border border-primary rounded-lg text-primary text-[13px] font-medium hover:bg-primary/10 transition-colors"
+          >
+            Give me my hand back
+          </button>
+        </div>
+      )}
     </div>
   );
 };

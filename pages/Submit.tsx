@@ -1,309 +1,184 @@
 import React, { useState } from 'react';
-// import { generateLeftorianIdea } from '../services/geminiService';
-import { StrapiService } from '../services/strapiService';
 import { Category } from '../types';
+import { StrapiService } from '../services/strapiService';
+
+type Kind = 'real' | 'fake';
+
+const SEG_BASE = 'cursor-pointer select-none px-3.5 py-1.5 text-[13px] transition-colors';
+
+const SegButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({
+  active,
+  onClick,
+  children,
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`${SEG_BASE} ${active ? 'text-primary shadow-[inset_0_0_0_1px_var(--primary)]' : 'text-ink-dim'}`}
+  >
+    {children}
+  </button>
+);
+
+const fieldClass =
+  'w-full min-h-9 px-2.5 py-1.5 text-sm text-foreground bg-background border border-border rounded-lg placeholder:text-ink-faint focus:border-primary transition-colors';
 
 const Submit: React.FC = () => {
-  const [type, setType] = useState<'real' | 'fake'>('real');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Real product state
-  const [formData, setFormData] = useState({
-    title: '',
-    category: Category.KITCHEN,
-    price: '',
-    shortDescription: '',
-    description: '',
-    features: '',
-    artUrl: '',
-    isReal: true
-  });
+  const [kind, setKind] = useState<Kind>('real');
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState<Category>(Category.KITCHEN);
+  const [sourceOrLook, setSourceOrLook] = useState('');
+  const [reasoning, setReasoning] = useState('');
 
-  // Fake idea state
-  const [fakeFormData, setFakeFormData] = useState({
-    title: '',
-    problem: '',
-    tagline: '',
-    features: ''
-  });
-
-  const handleFakeInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFakeFormData(prev => ({ ...prev, [name]: value }));
+  const pickKind = (k: Kind) => {
+    setKind(k);
+    setSubmitted(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleRealSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    // Format payload for Strapi
-    const payload = {
-      data: {
-        title: formData.title,
-        slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        category: formData.category,
-        price: formData.price || 'N/A',
-        short_description: formData.shortDescription,
-        description: formData.description,
-        is_real: true,
-        features: formData.features.split('\n').filter(f => f.trim() !== ''),
-        art_url: formData.artUrl
-      }
-    };
-
+  const handleSubmit = async () => {
+    setSubmitting(true);
     try {
-      await StrapiService.submitProduct(payload);
-      alert('Product submitted successfully!');
-      // Reset form or redirect? keeping it simple for now as per instructions
-      setFormData({
-        title: '',
-        category: Category.KITCHEN,
-        price: '',
-        shortDescription: '',
-        description: '',
-        features: '',
-        artUrl: '',
-        isReal: true
-      });
-    } catch (error) {
-      console.error(error);
-      alert('Failed to submit product to Strapi.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleFakeSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const payload = {
-      data: {
-        title: fakeFormData.title,
-        problem: fakeFormData.problem,
-        tagline: fakeFormData.tagline,
-        features: fakeFormData.features.split('\n').filter(f => f.trim() !== ''),
-        votes: 0
+      if (kind === 'real') {
+        await StrapiService.submitProduct({
+          data: {
+            title: name,
+            category,
+            is_real: true,
+            source_or_look: sourceOrLook,
+            reasoning,
+          },
+        });
+      } else {
+        await StrapiService.submitSuggestion({
+          data: {
+            title: name,
+            category,
+            source_or_look: sourceOrLook,
+            reasoning,
+          },
+        });
       }
-    };
-
-    try {
-      await StrapiService.submitSuggestion(payload);
-      alert('Idea submitted to the Hall of Fame!');
-      setFakeFormData({
-        title: '',
-        problem: '',
-        tagline: '',
-        features: ''
-      });
-    } catch (error) {
-      console.error(error);
-      alert('Failed to submit suggestion.');
+      setSubmitted(true);
+      setName('');
+      setSourceOrLook('');
+      setReasoning('');
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't reach the submission queue. Please try again in a moment.");
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-[800px] mx-auto px-6 py-16">
-      <div className="text-center mb-12">
-         <h1 className="text-4xl font-black tracking-tight mb-4">The Leftorian Idea Lab</h1>
-         <p className="text-slate-600 dark:text-slate-400 text-lg">
-           Help us end the right-handed monopoly. Submit a real ergonomic tool or pitch a genius fake concept.
-         </p>
+    <div className="px-5 md:px-10 pt-[52px] pb-20 max-w-[820px] mx-auto">
+      <h1 className="mb-2.5 text-4xl md:text-[42px] font-medium tracking-[-0.025em]">Submit a product</h1>
+      <p className="mb-[30px] max-w-[58ch] text-[15px] text-ink-dim text-pretty">
+        Found something genuinely left-handed out in the wild? Send it and we will verify it. Got an idea that should exist but doesn't? Describe it and we will have a machine build the picture.
+      </p>
+
+      <div className="inline-flex border border-border rounded-lg overflow-hidden mb-[26px]">
+        <SegButton active={kind === 'real'} onClick={() => pickKind('real')}>
+          A real product I found
+        </SegButton>
+        <SegButton active={kind === 'fake'} onClick={() => pickKind('fake')}>
+          A product that should exist
+        </SegButton>
       </div>
 
-      <div className="bg-white dark:bg-[#1a2335] rounded-3xl p-8 border border-slate-200 dark:border-slate-800 shadow-2xl">
-        <div className="flex h-12 bg-slate-100 dark:bg-background-dark p-1 rounded-xl mb-10">
-          <button 
-            onClick={() => setType('real')}
-            className={`flex-1 rounded-lg text-sm font-bold transition-all ${type === 'real' ? 'bg-white dark:bg-[#1a2335] text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+      <div className="bg-card border border-border rounded-[14px] px-6 md:px-7 py-[26px]">
+        <p className="mb-[22px] text-sm text-ink-mute text-pretty">
+          {kind === 'real'
+            ? 'We check that it is buyable somewhere and that it is genuinely mirrored rather than just marketed at us. Verified entries get the REAL mark.'
+            : 'Describe it well enough that a machine can picture it. If we like it, we generate the render and it goes up with the AI mark.'}
+        </p>
+
+        <form
+          className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-[18px]"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          <div className="md:col-span-2">
+            <label className="block mb-1.5 text-xs text-ink-dim">Name of the tool</label>
+            <input
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Reversed-blade kitchen shears"
+              className={fieldClass}
+            />
+          </div>
+          <div>
+            <label className="block mb-1.5 text-xs text-ink-dim">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as Category)}
+              className={fieldClass}
+            >
+              {Object.values(Category).map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block mb-1.5 text-xs text-ink-dim">
+              {kind === 'real' ? 'Where can we find it?' : 'What does it look like?'}
+            </label>
+            <input
+              required
+              value={sourceOrLook}
+              onChange={(e) => setSourceOrLook(e.target.value)}
+              placeholder={kind === 'real' ? 'Link, shop name, or the town you saw it in' : 'Matte steel, mirrored grip, deeply unnecessary'}
+              className={fieldClass}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block mb-1.5 text-xs text-ink-dim">
+              Why a right-handed person has never noticed this problem
+            </label>
+            <textarea
+              required
+              value={reasoning}
+              onChange={(e) => setReasoning(e.target.value)}
+              placeholder="Be specific. Bonus points for scars."
+              rows={4}
+              className={`${fieldClass} resize-y`}
+            />
+          </div>
+        </form>
+
+        <div className="flex items-center justify-between gap-4 mt-[22px] flex-wrap">
+          <span className="font-mono-tag text-[11px] text-ink-faint">
+            {kind === 'real' ? '14 submissions in the verification queue' : '31 ideas waiting on the render queue'}
+          </span>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !name || !sourceOrLook || !reasoning}
+            className="inline-flex items-center px-5 py-2.5 border border-primary rounded-lg text-primary font-medium disabled:opacity-40 hover:bg-primary/10 transition-colors"
           >
-            Submit Real Gear
-          </button>
-          <button 
-            onClick={() => setType('fake')}
-            className={`flex-1 rounded-lg text-sm font-bold transition-all ${type === 'fake' ? 'bg-white dark:bg-[#1a2335] text-primary shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-          >
-            Pitch Fake Idea
+            {submitting ? 'Sending…' : kind === 'real' ? 'Send for verification' : 'Send to the Idea Lab'}
           </button>
         </div>
-
-        {type === 'real' ? (
-          <form className="space-y-6" onSubmit={handleRealSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Product Name</label>
-                <input 
-                  required
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  type="text" 
-                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                  placeholder="e.g. Left-handed Can Opener Pro" 
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Category</label>
-                <select 
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary"
-                >
-                  {Object.values(Category).map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Price</label>
-                <input 
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  type="text" 
-                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                  placeholder="$12.99" 
-                />
-              </div>
-               <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Image URL</label>
-                <input 
-                  required
-                  name="artUrl"
-                  value={formData.artUrl}
-                  onChange={handleInputChange}
-                  type="url" 
-                  className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                  placeholder="https://..." 
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Short Description</label>
-              <input 
-                required
-                name="shortDescription"
-                value={formData.shortDescription}
-                onChange={handleInputChange}
-                type="text" 
-                className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                placeholder="Brief summary for the product card..." 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Full Description (Markdown)</label>
-              <textarea 
-                required
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                rows={4} 
-                className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                placeholder="Explain the ergonomic advantage in detail..." 
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Features (One per line)</label>
-              <textarea 
-                name="features"
-                value={formData.features}
-                onChange={handleInputChange}
-                rows={4} 
-                className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                placeholder="- Reversed blades&#10;- Ergonomic grip&#10;- High-carbon steel" 
-              />
-            </div>
-
-            <div className="pt-4">
-              <button type="submit" className="w-full bg-primary text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-primary/30 hover:scale-[1.01] transition-transform">
-                Submit to Registry
-              </button>
-              <p className="text-center text-xs text-slate-400 font-medium mt-4">
-                Please note: All submissions are moderated before being published. This process may take up to 5 business days.
-              </p>
-            </div>
-          </form>
-        ) : (
-          <form className="space-y-6" onSubmit={handleFakeSubmit}>
-             <div className="space-y-2">
-               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Idea Name</label>
-               <input 
-                 required
-                 name="title"
-                 value={fakeFormData.title}
-                 onChange={handleFakeInputChange}
-                 type="text" 
-                 className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                 placeholder="e.g. The Ambi-Coffee Mug" 
-               />
-             </div>
-
-             <div className="space-y-2">
-               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">The Problem It Solves</label>
-               <textarea 
-                 required
-                 name="problem"
-                 value={fakeFormData.problem}
-                 onChange={handleFakeInputChange}
-                 rows={2} 
-                 className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                 placeholder="What's annoying you?" 
-               />
-             </div>
-
-             <div className="space-y-2">
-               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Tagline</label>
-               <input 
-                 required
-                 name="tagline"
-                 value={fakeFormData.tagline}
-                 onChange={handleFakeInputChange}
-                 type="text" 
-                 className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                 placeholder="Catchy slogan..." 
-               />
-             </div>
-
-             <div className="space-y-2">
-               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Features (One per line)</label>
-               <textarea 
-                 name="features"
-                 value={fakeFormData.features}
-                 onChange={handleFakeInputChange}
-                 rows={4} 
-                 className="w-full bg-slate-50 dark:bg-background-dark border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary" 
-                 placeholder="- Feature 1&#10;- Feature 2" 
-               />
-             </div>
-
-             <div className="pt-4">
-               <button type="submit" className="w-full bg-primary text-white py-4 rounded-xl font-black text-lg shadow-xl shadow-primary/30 hover:scale-[1.01] transition-transform">
-                 Add to Hall of Fame
-               </button>
-             </div>
-             
-             <p className="text-center text-xs text-slate-400 font-medium space-y-1">
-               <span className="block">Submitting a fake idea helps raise awareness of the daily ergonomic challenges lefties face.</span>
-               <span className="block">Please note: All submissions are moderated before being published. This process may take up to 5 business days.</span>
-             </p>
-          </form>
-        )}
       </div>
+
+      {submitted && (
+        <div className="mt-5 px-5 py-[18px] border border-primary rounded-[14px] bg-primary/[0.08]">
+          <p className="mb-1 font-mono-tag text-[10px] tracking-[0.14em] uppercase text-primary">
+            Awaiting approval
+          </p>
+          <p className="text-sm text-ink-dim">
+            {kind === 'real'
+              ? 'Thank you. A human lefty will check it exists, then it joins the shelf with a REAL mark.'
+              : 'Thank you. If it survives the approval round we will have the machine draw it, mark it AI, and let people argue in the comments.'}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,47 +1,43 @@
-
 export enum Category {
-  KITCHEN = 'Kitchen Gear',
-  OFFICE = 'Office Supplies',
-  WORKSHOP = 'Workshop Tools',
-  SPORTS = 'Sports Equipment',
-  LAB = 'Lab Prototype'
+  KITCHEN = 'Kitchen',
+  OFFICE = 'Office',
+  WORKSHOP = 'Workshop',
+  SPORT = 'Sport',
+  LAB = 'Idea Lab',
 }
 
 export interface Comment {
   id: string;
-  productId: string;
-  userName: string;
-  userAvatar: string;
-  content: string;
-  timestamp: string;
-  likes: number;
+  who: string;
+  when: string;
+  text: string;
 }
 
 export interface Product {
   id: string;
+  slug?: string;
   name: string;
-  slug?: string; // Strapi friendly URL
-  description: string;
   category: Category;
-  price: string | 'N/A';
-  image: string;
   isReal: boolean;
-  features: { text: string; icon: string; }[];
-  longDescription?: string;
-  ratingAvg?: number;
-  ratingCount?: number;
+  price: string;
+  blurb: string;
+  longDescription: string;
+  features: string[];
+  cost: string;
+  imgLabel: string;
+  /** Absolute URL (e.g. from the Garage S3 bucket via Strapi's upload provider). Falls back to the imgLabel placeholder when unset. */
+  imageUrl?: string;
+  /** Seed counts an admin sets in Strapi. Likes on top of this are local-only, per visitor. */
+  viewsSeed: number;
+  likesSeed: number;
 }
 
-export interface Rating {
-  id: string;
-  score: number;
-  productId: string;
-  userId: string;
+export interface Stat {
+  n: string;
+  t: string;
 }
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
+export interface Principle {
+  h: string;
+  p: string;
 }

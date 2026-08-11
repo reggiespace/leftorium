@@ -1,70 +1,52 @@
 @import "tailwindcss";
 @config "./tailwind.config.ts";
 
+/*
+  Nocturne tokens, ported from the Claude Design export
+  (project/_ds/nocturne design system, styles.css, and Leftorium.dc.html).
+  Dark-only by design: a near-neutral blue-grey ground, one accent
+  used as a line/glow rather than a flood, outlined buttons, quiet badges.
+*/
 @layer base {
   :root {
-    --background: 340 20% 98%;
-    --foreground: 240 60% 10%;
+    --background: #161826;
+    --foreground: #e9e9ed;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 60% 10%;
+    --card: #232532;
+    --card-foreground: #e9e9ed;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 60% 10%;
+    --popover: #232532;
+    --popover-foreground: #e9e9ed;
 
-    /* Primary: Vibrant Yellow/Orange */
-    --primary: 40 96% 58%;
-    --primary-foreground: 240 60% 10%;
+    /* Accent: the product's own blurple. Used as text/border, never a flood fill. */
+    --primary: #9184d9;
+    --primary-foreground: #161826;
+    --primary-hover: #b5abfc;
 
-    /* Secondary: Dark Purple for right side background / sections */
-    --secondary: 243 47% 30%;
-    --secondary-foreground: 0 0% 100%;
+    /* Neutral surface one step up from bg — segmented controls, inputs. */
+    --secondary: #1c1e2b;
+    --secondary-foreground: #cfd3e5;
 
-    --muted: 340 30% 95%;
-    --muted-foreground: 240 10% 40%;
+    --muted: #1c1e2b;
+    --muted-foreground: #75798c;
 
-    /* Accent: Bright Pink */
-    --accent: 330 81% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: #262a60;
+    --accent-foreground: #d2cefd;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: #c96a7c;
+    --destructive-foreground: #161826;
 
-    --border: 240 20% 90%;
-    --input: 240 20% 90%;
-    --ring: 240 60% 10%;
+    --border: rgba(233, 233, 237, 0.16);
+    --input: rgba(233, 233, 237, 0.16);
+    --ring: #9184d9;
 
-    --radius: 0.75rem;
-  }
+    /* Quiet text tones from the ramp, for copy at different weights. */
+    --ink-dim: #b2b6ca;
+    --ink-mute: #9397ab;
+    --ink-faint: #75798c;
+    --ink-ghost: #595d6c;
 
-  .dark {
-    --background: 240 60% 10%;
-    --foreground: 0 0% 100%;
-
-    --card: 240 60% 15%;
-    --card-foreground: 0 0% 100%;
-
-    --popover: 240 60% 15%;
-    --popover-foreground: 0 0% 100%;
-
-    --primary: 40 96% 58%;
-    --primary-foreground: 240 60% 10%;
-
-    --secondary: 243 47% 40%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 240 30% 20%;
-    --muted-foreground: 240 20% 70%;
-
-    --accent: 330 81% 60%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 240 30% 20%;
-    --input: 240 30% 20%;
-    --ring: 40 96% 58%;
+    --radius: 0.5rem;
   }
 }
 
@@ -72,7 +54,42 @@
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
+  html {
+    color-scheme: dark;
   }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  :focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: rgba(145, 132, 217, 0.3);
+  }
+}
+
+@keyframes nag {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-nag {
+  animation: nag 0.3s ease both;
+}
+
+.font-mono-tag {
+  font-family: ui-monospace, Menlo, monospace;
 }

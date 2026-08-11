@@ -1,58 +1,125 @@
-# Strapi Setup Guide for Leftorium
+# Strapi setup for leftorium.ca
 
-If you are seeing **empty tables**, **missing products**, or **registration errors** (like "Forbidden"), follow these steps in your Strapi Admin Panel.
+The frontend talks to a Strapi 5 instance (e.g. `https://strapi.reggiespace.ca`)
+for three collections. Content-type definitions you can drop straight into a
+Strapi project's `src/api/` are in [`/strapi-schema`](strapi-schema) at the
+repo root — copy each `leftorium-product/`, `leftorium-suggestion/` and
+`leftorium-comment/` folder in there, restart Strapi, and the collections
+appear in the admin. If you'd rather build them by hand, use the field lists
+below (Content-Type Builder → Create new collection type).
 
-## 1. Fix Missing Products (Visibility)
+If Strapi is unreachable or has no published products yet, the site falls
+back to the 12 seed products baked into `mockData.ts` — the catalogue is
+never empty either way.
 
-**Problem:** You created products in Strapi, but the app shows "No products found" or console shows 403 Errors.
+## 1. Leftorium Product
 
-### A. Publish Your Content
-By default, Strapi creates content in **Draft** mode. The API (by default) only returns **Published** content.
-1. Go to **Content Manager** > **Leftorium Product**.
-2. Click on a product to edit it.
-3. Click the **Publish** button (top right).
-4. Repeat for all products you want to see.
+The catalogue itself.
 
-### B. Enable Public Read Permissions
-If you want users to see products *without* logging in:
-1. Go to **Settings** > **Users & Permissions Plugin** > **Roles**.
-2. Click **Public**.
-3. Scroll down to **Leftorium-product** (or `leftorium-product`).
-4. Check **find** and **findOne**.
-5. Click **Save** (top right).
+| Field | Type | Notes |
+| --- | --- | --- |
+| `title` | Text | required |
+| `slug` | UID | target: `title` |
+| `category` | Enumeration | `Kitchen`, `Office`, `Workshop`, `Sport`, `Idea Lab` |
+| `is_real` | Boolean | true = REAL badge, false = AI badge |
+| `price` | Text | e.g. `$12.99` or `Concept` |
+| `blurb` | Text | short card copy |
+| `description` | Text | long detail-page copy |
+| `features` | JSON | array of short strings |
+| `cost_note` | Text | answers "the right-handed version costs a lefty ___" |
+| `image` | Media (single, images) | optional — falls back to `img_label` placeholder |
+| `img_label` | Text | placeholder caption until a real image is uploaded |
+| `likes_seed` | Number (integer) | starting like count (real likes are local-only, see below) |
+| `views_seed` | Number (integer) | starting view count |
 
-### C. Enable Authenticated Read Permissions
-If you want *logged-in* users to see products:
-1. Go back to **Roles**.
-2. Click **Authenticated**.
-3. Scroll to **Leftorium-product**.
-4. Check **find** and **findOne**.
-5. Click **Save**.
+**Publish** each product — Strapi's API only returns published entries by
+default, and this content type has Draft & Publish on.
 
----
+### Permissions (Settings → Users & Permissions → Roles → Public)
+Check `find` and `findOne` on **Leftorium-product** so the catalogue loads
+without login. Nothing needs `create` here — new products only enter this
+collection when you manually promote an approved **Leftorium Suggestion**.
 
-## 2. Fix Empty User Profiles (Registration)
+## 2. Leftorium Suggestion
 
-**Problem:** You register a user, they appear in the `User` table, but the `Leftorium User` table is empty.
+What the "Submit a product" page posts to — both tabs (a real find, or an
+Idea Lab pitch) land here as unpublished entries for you to review.
 
-**Reason:** The app tries to create a linked profile *immediately* after registration. If the "Authenticated" role doesn't have permission to *create* a `Leftorium User`, this step fails silently or throws a 403.
+| Field | Type | Notes |
+| --- | --- | --- |
+| `title` | Text | required |
+| `category` | Enumeration | same list as above |
+| `is_real` | Boolean | which tab it was submitted from |
+| `source_or_look` | Text | "where to find it" (real) or "what it looks like" (fake) |
+| `reasoning` | Text | "why a right-handed person never noticed" |
 
-### Enable Create Permission for Authenticated Users
-1. Go to **Settings** > **Users & Permissions Plugin** > **Roles**.
-2. Click **Authenticated**.
-3. Scroll to **Leftorium-user**.
-4. Check **create**.
-    - *Note: Also check `find`, `findOne`, and `update` if you want them to view/edit their own profile.*
-5. Scroll to **Upload** (System).
-    - Check **upload** (if you want them to upload avatars).
-6. Click **Save**.
+### Permissions (Public role)
+Check **only** `create` on **Leftorium-suggestion**. Do **not** grant `find`/
+`findOne` publicly — the submission queue counts shown on the Submit page
+are static copy, not a live read of this table, so there's no reason to
+expose it. Review submissions in the admin; when you approve one, create the
+matching **Leftorium Product** by hand (or generate the AI art first, then
+create it) and publish that.
 
----
+## 3. Leftorium Comment
 
-## 3. Verify Relations (For Developers)
+Read-only flavor comments shown on a product's detail page. There is
+deliberately no public comment form (no registration system exists yet to
+attribute comments to anyone) — you write these yourself in the admin to
+seed a page.
 
-Ensure your Content Types are correctly related:
-- **Leftorium User** should have a relation to **User** (from `users-permissions`).
-    - Field name: `user` (one-to-one or one-to-many depending on setup, usually one-to-one).
-- **Leftorium Comment** should have a relation to **Leftorium User**.
-    - Field name: `leftorium_user`.
+| Field | Type | Notes |
+| --- | --- | --- |
+| `author_name` | Text | display handle |
+| `text` | Text | the comment |
+| `product` | Relation | many-to-one → Leftorium Product |
+
+### Permissions (Public role)
+Check `find` and `findOne` only. Never grant `create` — this collection is
+admin-authored. If a product has no comments here, the page falls back to
+generic seed comments from `mockData.ts`.
+
+## Image storage (Garage S3)
+
+Product photos/renders should be uploaded through Strapi's Media Library
+(the `image` field on Leftorium Product), but **not** stored on local
+disk — Dokploy containers are ephemeral, so a redeploy would silently
+delete every uploaded photo. Point Strapi's upload provider at the Garage
+bucket instead: copy [`/strapi-config`](strapi-config)'s `config/plugins.js`
+and `config/middlewares.js` into the Strapi project (merge if it already
+has custom middleware config), `npm install @strapi/provider-upload-aws-s3`
+there, and set these env vars on the Strapi deployment:
+
+```
+S3_ENDPOINT=https://storage.reggiespace.ca
+S3_BASE_URL=https://storage.reggiespace.ca/health
+S3_BUCKET=health
+S3_ROOT_PATH=leftorium
+S3_REGION=garage
+S3_ACCESS_KEY_ID=...
+S3_SECRET_ACCESS_KEY=...
+```
+
+`S3_BUCKET=health` / the `leftorium` prefix is an assumption from the
+bucket URL you gave (`storage.reggiespace.ca/health`) — correct it if
+"health" is actually a path, not the bucket name, or if you'd rather not
+share that bucket across projects. Never commit the access key/secret;
+set them as Strapi's own environment variables in Dokploy.
+
+Once configured, uploaded images just work on the frontend with no further
+changes — `services/strapiService.ts` reads the media relation's URL
+straight off the product, and `components/ImgPlaceholder.tsx` renders a
+real `<img>` when it's present (falling back to the labelled placeholder
+box for anything not yet photographed, or if an image URL 404s).
+
+## Environment
+
+The frontend reads the Strapi URL from `window.__ENV__.VITE_STRAPI_URL`
+(injected at container start, see `docker/docker-entrypoint.sh`) or, in
+local dev, from `.env.local`:
+
+```
+VITE_STRAPI_URL=http://localhost:1337
+# VITE_STRAPI_TOKEN=only-needed-if-you-lock-down-the-Public-role-instead
+# VITE_HERO_IMAGE_URL=https://storage.reggiespace.ca/health/leftorium/hero.jpg
+```

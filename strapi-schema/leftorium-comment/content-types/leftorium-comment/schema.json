@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "leftorium_comments",
+  "info": {
+    "singularName": "leftorium-comment",
+    "pluralName": "leftorium-comments",
+    "displayName": "Leftorium Comment",
+    "description": "Read-only flavor comments shown on a product page. Admin-authored only — the Public role should have find/findOne but never create."
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "author_name": {
+      "type": "string",
+      "required": true,
+      "description": "Display handle, e.g. 'Prof_Sinistra'"
+    },
+    "text": {
+      "type": "text",
+      "required": true
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::leftorium-product.leftorium-product",
+      "inversedBy": "comments"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+*.log
+.env.local
+# Not needed inside the frontend build context:
+strapi-schema
+strapi-config
